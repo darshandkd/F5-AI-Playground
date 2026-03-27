@@ -103,11 +103,3 @@ Landing Page (5 tiles)
 | Vectors | Embeddings, similarity search, vector databases, RAG pipeline |
 | Agents | Agent loop, workflow patterns, multi-agent orchestration |
 | Inference | Prefill/decode phases, cost calculation, speed tricks, smart routing |
-
----
-
-## Feedback
-
-Built by **Darshan Doshi**, Sr. Solutions Engineer at F5.
-
-For feedback, feature requests, or to adapt this for a specific use-case: **d.doshi@f5.com**
