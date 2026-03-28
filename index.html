@@ -2250,44 +2250,47 @@
                     </div>
 
                     {/* ── DECISION RATIONALE ── */}
-                    <div className={`mb-3 flex-shrink-0 p-3 rounded-xl overflow-hidden ${isDark ? 'bg-white/[0.02] border border-white/5' : 'bg-gray-50 border border-gray-200'}`} style={{ height: '140px' }}>
-                        {lastDecision ? (
-                          <div>
-                            <div className={`text-[9px] uppercase font-bold tracking-wider mb-2 ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>Why <span className="text-emerald-400">{lastDecision.pod}</span> won</div>
-                            {lastDecision.factors ? (
-                                <div>
-                                    <div className="space-y-1.5 mb-2">
-                                        {[
-                                            { label: 'Short queue', desc: `${Math.abs(Math.round(lastDecision.factors.qPts / 4.2))} pending requests`, pts: lastDecision.factors.qPts, icon: 'ph-queue' },
-                                            { label: 'KV cache reuse', desc: `${Math.round(lastDecision.factors.kvPts / 0.38)}% prefix cached`, pts: lastDecision.factors.kvPts, icon: 'ph-database' },
-                                            { label: 'GPU headroom', desc: 'Below saturation threshold', pts: lastDecision.factors.gpuPts, icon: 'ph-cpu' },
-                                            { label: 'Fast first token', desc: `~${Math.abs(Math.round(lastDecision.factors.ttftPts * 14))}ms estimated TTFT`, pts: lastDecision.factors.ttftPts, icon: 'ph-timer' },
-                                            { label: 'LoRA adapter loaded', desc: `Model weights in ${lastDecision.gpu} memory`, pts: lastDecision.factors.loraPts, icon: 'ph-plug' },
-                                        ].filter(f => f.pts !== 0).map(f => (
-                                            <div key={f.label} className="flex items-center gap-2">
-                                                <i className={`ph ${f.icon} text-xs`} style={{ color: f.pts > 0 ? '#10b981' : '#ef4444' }}></i>
-                                                <span className={`text-[10px] font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>{f.label}</span>
-                                                <span className={`text-[10px] ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>{f.desc}</span>
-                                                <div className="flex-1 flex justify-end items-center gap-1.5">
-                                                    <div className={`h-1 rounded-full ${isDark ? 'bg-white/5' : 'bg-gray-200'}`} style={{ width: '48px' }}>
-                                                        <div className="h-full rounded-full" style={{ width: `${Math.min(100, Math.abs(f.pts) / 25 * 100)}%`, backgroundColor: f.pts > 0 ? '#10b981' : '#ef4444' }} />
-                                                    </div>
-                                                    <span className={`text-[10px] font-mono font-bold w-10 text-right ${f.pts > 0 ? 'text-emerald-400' : 'text-red-400'}`}>{f.pts > 0 ? '+' : ''}{f.pts.toFixed(1)}</span>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                    <div className={`flex items-center justify-between pt-2 border-t ${isDark ? 'border-white/5' : 'border-gray-200'}`}>
-                                        <span className={`text-[10px] font-bold ${isDark ? 'text-gray-200' : 'text-gray-800'}`}>EPP Score</span>
-                                        <span className="text-sm font-bold font-mono text-emerald-400">{lastDecision.factors.total} pts</span>
-                                    </div>
+                    <div className={`mb-3 flex-shrink-0 rounded-xl overflow-hidden ${isDark ? 'border border-white/5' : 'border border-gray-200'}`} style={{ height: '80px' }}>
+                        {lastDecision && lastDecision.factors ? (
+                            <div className="flex items-stretch h-full">
+                                {/* Winner pod */}
+                                <div className={`flex flex-col items-center justify-center px-4 flex-shrink-0 ${isDark ? 'bg-emerald-500/10' : 'bg-emerald-50'}`} style={{ minWidth: '90px' }}>
+                                    <div className="text-[9px] uppercase font-bold text-emerald-400 tracking-wider">Winner</div>
+                                    <div className="text-base font-bold font-mono text-emerald-400">{lastDecision.pod}</div>
+                                    <div className={`text-[10px] ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>{lastDecision.gpu}</div>
                                 </div>
-                            ) : (
-                                <div className={`text-xs ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>Round-robin — no scoring. Pod selected randomly.</div>
-                            )}
-                          </div>
+                                {/* Factor chips */}
+                                <div className={`flex-1 flex items-center gap-2 px-3 overflow-x-auto ${isDark ? 'bg-white/[0.01]' : 'bg-gray-50'}`}>
+                                    {[
+                                        { label: 'Queue', value: `${Math.abs(Math.round(lastDecision.factors.qPts / 4.2))}`, pts: lastDecision.factors.qPts, icon: 'ph-queue' },
+                                        { label: 'KV Cache', value: `${Math.round(lastDecision.factors.kvPts / 0.38)}%`, pts: lastDecision.factors.kvPts, icon: 'ph-database' },
+                                        { label: 'TTFT', value: `${Math.abs(Math.round(lastDecision.factors.ttftPts * 14))}ms`, pts: lastDecision.factors.ttftPts, icon: 'ph-timer' },
+                                        { label: 'LoRA', value: 'match', pts: lastDecision.factors.loraPts, icon: 'ph-plug' },
+                                    ].filter(f => f.pts !== 0).map(f => (
+                                        <div key={f.label} className={`flex flex-col items-center px-2.5 py-1.5 rounded-lg flex-shrink-0 ${isDark ? 'bg-white/[0.03]' : 'bg-white'}`}>
+                                            <i className={`ph ${f.icon} text-xs mb-0.5`} style={{ color: f.pts > 0 ? '#10b981' : '#ef4444' }}></i>
+                                            <span className={`text-[10px] font-bold ${isDark ? 'text-gray-200' : 'text-gray-800'}`}>{f.value}</span>
+                                            <span className={`text-[9px] ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>{f.label}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                                {/* Total score */}
+                                <div className={`flex flex-col items-center justify-center px-4 flex-shrink-0 ${isDark ? 'bg-emerald-500/5' : 'bg-emerald-50/50'}`} style={{ minWidth: '80px' }}>
+                                    <div className="text-2xl font-bold font-mono text-emerald-400">{lastDecision.factors.total}</div>
+                                    <div className="text-[9px] uppercase font-bold text-emerald-400 tracking-wider">EPP pts</div>
+                                </div>
+                            </div>
+                        ) : lastDecision ? (
+                            <div className={`flex items-center justify-center h-full ${isDark ? 'bg-white/[0.01]' : 'bg-gray-50'}`}>
+                                <div className="text-center">
+                                    <div className={`text-xs font-medium ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Round-robin routing</div>
+                                    <div className={`text-[10px] ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>No EPP scoring — pod <span className="font-mono font-bold">{lastDecision.pod}</span> selected randomly</div>
+                                </div>
+                            </div>
                         ) : (
-                            <div className={`text-xs ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>Waiting for first routing decision...</div>
+                            <div className={`flex items-center justify-center h-full ${isDark ? 'bg-white/[0.01]' : 'bg-gray-50'}`}>
+                                <div className={`text-xs ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>Waiting for first routing decision...</div>
+                            </div>
                         )}
                     </div>
 
