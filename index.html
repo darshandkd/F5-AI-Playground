@@ -372,7 +372,7 @@
         const F5Logo = ({ onClick, className = '' }) => {
             return (
                 <button onClick={onClick} className={`flex items-center gap-2 transition-transform hover:scale-105 ${className}`} aria-label="F5 Home">
-                    <svg width="48" height="48" viewBox="0 0 47 44" xmlns="http://www.w3.org/2000/svg">
+                    <svg width="40" height="40" viewBox="0 0 47 44" xmlns="http://www.w3.org/2000/svg">
                         <circle cx="22.5" cy="22.3" fill="#e4002b" r="22.2"/>
                         <path d="m21.99 24.49c10.9.9 15.1 3.9 14.9 8-.2 2.2-2.3 4.3-5 4.5-3.2.2-4.7-1.1-5.6-2.5-.8-1.3-1.7-2.6-2.6-4-.2-.4-.6-.1-.9.1-.7.6-1.3 1.3-1.9 1.9-.4.4-.3.7-.2 1 .6 1.4 1.2 2.8 1.8 4.1 1 .6 5.5 1.4 8.8 1.1 2.3-.2 5.1-1.1 7.5-2.8 2.3-1.8 4-4.2 4.3-8.1.1-2.4-.3-4.9-2.4-7.2s-5.7-4.2-13-4.7c.4-1.2.7-2.3 1.1-3.4 4.4.2 8.3.5 11.6.9.3-1.3.4-2.5.7-3.7l-.9-1.1c-1.7-.2-3.3-.6-5.1-.8-2.3-.3-4.7-.5-7.3-.6-1.7 4.8-3.7 10.9-5.8 17.3m-2.9-18.7c-.8 0-1.9.2-3.7.6-3.9 1.1-8.7 3.8-9.2 8.3-.1.7-.1 1.5-.2 2.2-1.1.1-2.1.2-3.1.3-.1.9-.1 1.7-.2 2.6 1-.1 2-.1 3.1-.2-.2 4.7 0 9.4.4 13.8.1.7.1 1.3.1 1.7-.1.4-.8.6-1.8.6l1.3 1.6c3.8.7 8.6 1.2 13.7 1.3v-1.5c-3-.2-4.4-.6-4.6-1.2-.2-.5-.2-1.2-.3-1.9-.2-4.6-.3-9.6-.2-14.7 1.7 0 3.4 0 5.1-.1.9-.4 1.7-.8 2.5-1.2v-1.7c-2.6 0-5.1.1-7.6.1.1-2.1.2-4.1.3-6 .1-1.3 1-2.2 1.8-2.2 1.4-.1 2.7.5 4 1.1.7.3 1.4.7 2.1 1 .3.1.7.2 1-.1.4-.5.8-1 1.2-1.4.2-.3.1-.5 0-.6-.9-.7-1.7-1.3-2.6-2-.5-.4-1.4-.4-2.2-.4-.3-.1-.6 0-.9 0" fill="#fff"/>
                     </svg>
@@ -401,6 +401,7 @@
             { label: 'RAG Pipeline', tab: 0, keywords: 'inference rag retrieval augmented generation' },
             { label: 'MCP Server Protection', tab: 0, keywords: 'inference mcp tool server proxy' },
             { label: 'NIM Prompt Classification', tab: 0, keywords: 'inference nim nvidia classification irule bigip policy routing llm' },
+            { label: 'EPP Inference Router', tab: 0, keywords: 'inference epp nginx gateway fabric endpoint picker kv cache vllm kubernetes pod scoring lora' },
             // Safety
             { label: 'Prompt Injection Defense', tab: 1, keywords: 'safety prompt injection jailbreak guardrails' },
             { label: 'AI Red Teaming', tab: 1, keywords: 'safety red team adversarial attack testing' },
@@ -1614,7 +1615,7 @@
                 setRows([]);
                 const interval = setInterval(() => {
                     const op = OPS[idxRef.current % OPS.length];
-                    setRows(prev => [...prev.slice(-6), {
+                    setRows(prev => [{
                         id: Date.now(),
                         stage: op.stage,
                         name: op.name,
@@ -1622,7 +1623,7 @@
                         speed: anyActive ? op.fast : op.slow,
                         status: !anyActive && op.canFail ? '⚠ Retry' : '✓ Done',
                         detail: computeDetail(op.stage),
-                    }]);
+                    }, ...prev].slice(0, 6));
                     idxRef.current++;
                 }, 2200);
                 return () => clearInterval(interval);
@@ -1641,11 +1642,12 @@
                     </div>
                     <div className={`h-px mb-2 ${isDark ? 'bg-white/10' : 'bg-gray-200'}`} />
 
-                    <div className="flex-1 min-h-0 flex flex-col gap-1.5 overflow-hidden">
+                    <div className="flex flex-col gap-1.5 overflow-hidden" style={{ height: '280px' }}>
                         {rows.map((r, i) => {
-                            const isNewest = i === rows.length - 1;
+                            const isNewest = i === 0;
+                            const isBad = r.status.includes('⚠');
                             const row = (
-                                <div>
+                                <div className="py-1.5 px-2 rounded-lg" style={{ backgroundColor: isBad ? (isDark ? 'rgba(239,68,68,0.08)' : 'rgba(239,68,68,0.06)') : (isDark ? 'rgba(16,185,129,0.10)' : 'rgba(16,185,129,0.08)') }}>
                                     <div className="flex items-center text-sm">
                                         <span className="w-24 shrink-0">
                                             <span className={`${STAGE_BG[r.stage]} text-white text-xs font-bold px-1.5 py-0.5 rounded`}>{r.stage}</span>
@@ -1662,7 +1664,7 @@
                             );
                             return isNewest
                                 ? <motion.div key={r.id} initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>{row}</motion.div>
-                                : <div key={r.id} style={{ opacity: 0.6 }}>{row}</div>;
+                                : <div key={r.id} style={{ opacity: Math.max(0.3, 1 - i * 0.15) }}>{row}</div>;
                         })}
                     </div>
 
@@ -2124,6 +2126,212 @@
             );
         };
 
+        // Simulation: NGINX EPP Inference Router
+        const SimEPPRouter = ({ active, toggles = {} }) => {
+            const { isDark } = useTheme();
+            const nginxActive = toggles.nginx || false;
+            const [log, setLog] = useState([]);
+            const [pipelineStep, setPipelineStep] = useState(-1);
+            const [lastDecision, setLastDecision] = useState(null);
+            const idxRef = useRef(0);
+
+            const pods = [
+                { id: 'vllm-0', gpu: 'A100', gpuUtil: 72, queue: 3, kv: 45, ttft: 245, lora: ['llama-3-8b'] },
+                { id: 'vllm-1', gpu: 'A100', gpuUtil: 89, queue: 9, kv: 11, ttft: 375, lora: ['mistral-7b'] },
+                { id: 'vllm-2', gpu: 'H100', gpuUtil: 41, queue: 1, kv: 67, ttft: 162, lora: ['llama-3-8b', 'llama-3-70b'] },
+                { id: 'vllm-3', gpu: 'A100', gpuUtil: 96, queue: 13, kv: 7, ttft: 495, lora: [] },
+                { id: 'vllm-4', gpu: 'H100', gpuUtil: 55, queue: 2, kv: 53, ttft: 192, lora: ['llama-3-8b', 'llama-3-70b', 'mistral-7b'] },
+                { id: 'vllm-5', gpu: 'A100', gpuUtil: 62, queue: 5, kv: 30, ttft: 288, lora: ['llama-3-8b'] },
+            ];
+
+            const calcFactors = (pod, modelId) => {
+                const qPts = -(pod.queue * 4.2);
+                const kvPts = pod.kv * 0.38;
+                const gpuPts = -Math.max(0, pod.gpuUtil - 60) * 0.45;
+                const ttftPts = -(pod.ttft / 14);
+                const loraPts = pod.lora.includes(modelId) ? 20 : 0;
+                const h100Pts = modelId === 'llama-3-70b' && pod.gpu === 'H100' ? 12 : 0;
+                const total = Math.max(0, Math.round(100 + qPts + kvPts + gpuPts + ttftPts + loraPts + h100Pts));
+                return { qPts, kvPts, gpuPts, ttftPts, loraPts, h100Pts, total };
+            };
+
+            // Set initial decision on mount so the rationale panel is always visible
+            useEffect(() => {
+                if (!lastDecision) {
+                    setLastDecision({ pod: 'vllm-2', gpu: 'H100', model: 'llama-3-8b', text: 'Explain K8s CNI plugins', factors: calcFactors(pods[2], 'llama-3-8b'), isEPP: true });
+                }
+            }, []);
+
+            const pipelineStages = [
+                { label: 'Client Request', color: '#6b7280' },
+                { label: 'NGINX Gateway', color: '#10b981' },
+                { label: 'EPP ext-proc', color: '#ff6a13' },
+                { label: 'InferencePool', color: '#a855f7' },
+                { label: 'vLLM Pod', color: '#e4002b' },
+            ];
+
+            const sequence = React.useMemo(() => [
+                { text: 'Explain K8s CNI plugins', model: 'llama-3-8b', bestPod: 'vllm-2', rrPod: 'vllm-3' },
+                { text: 'Analyze distributed training', model: 'llama-3-70b', bestPod: 'vllm-4', rrPod: 'vllm-1' },
+                { text: 'Translate paragraph to French', model: 'mistral-7b', bestPod: 'vllm-4', rrPod: 'vllm-3' },
+                { text: 'Write a pod failure watcher', model: 'llama-3-8b', bestPod: 'vllm-2', rrPod: 'vllm-5' },
+                { text: 'Design a RAG architecture', model: 'llama-3-70b', bestPod: 'vllm-2', rrPod: 'vllm-0' },
+                { text: 'How does PagedAttention work?', model: 'llama-3-8b', bestPod: 'vllm-4', rrPod: 'vllm-1' },
+                { text: 'Summarize this document', model: 'mistral-7b', bestPod: 'vllm-4', rrPod: 'vllm-3' },
+                { text: 'NGINX canary rollout strategy', model: 'llama-3-8b', bestPod: 'vllm-0', rrPod: 'vllm-3' },
+            ], []);
+
+            useEffect(() => { setLog([]); idxRef.current = 0; setPipelineStep(-1); }, [nginxActive]);
+
+            useEffect(() => {
+                const runCycle = () => {
+                    const req = sequence[idxRef.current % sequence.length];
+                    idxRef.current++;
+                    const podId = nginxActive ? req.bestPod : req.rrPod;
+                    const pod = pods.find(p => p.id === podId);
+
+                    // Animate pipeline: step through 0-4
+                    setPipelineStep(0);
+                    setTimeout(() => setPipelineStep(1), 400);
+                    setTimeout(() => setPipelineStep(2), nginxActive ? 800 : 400);
+                    setTimeout(() => setPipelineStep(3), nginxActive ? 1200 : 400);
+                    setTimeout(() => {
+                        setPipelineStep(4);
+                        const factors = nginxActive ? calcFactors(pod, req.model) : null;
+                        setLastDecision({ pod: podId, gpu: pod.gpu, model: req.model, text: req.text, factors, isEPP: nginxActive });
+                        setLog(prev => [{
+                            id: Date.now() + Math.random(),
+                            text: req.text, model: req.model, pod: podId,
+                            gpu: pod.gpu, ttft: pod.ttft, isGood: nginxActive,
+                            reason: nginxActive ? `KV ${pod.kv}% · Q${pod.queue} · ${pod.gpu}` : `Random · GPU ${pod.gpuUtil}% · Q${pod.queue}`,
+                        }, ...prev].slice(0, 6));
+                    }, nginxActive ? 1600 : 600);
+                    setTimeout(() => setPipelineStep(-1), nginxActive ? 2800 : 1400);
+                };
+                runCycle();
+                const interval = setInterval(runCycle, nginxActive ? 4000 : 2500);
+                return () => clearInterval(interval);
+            }, [nginxActive, sequence]);
+
+            return (
+                <div className="px-4 pt-16 pb-3 h-full flex flex-col overflow-hidden">
+                    {/* ── ROUTING PIPELINE ── */}
+                    <div className={`mb-3 flex-shrink-0 p-3 rounded-xl ${isDark ? 'bg-white/[0.02] border border-white/5' : 'bg-gray-50 border border-gray-200'}`}>
+                        <div className={`text-[9px] uppercase font-bold tracking-wider mb-2 ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>Routing Pipeline</div>
+                        <div className="flex items-center">
+                            {pipelineStages.map((s, i) => {
+                                const isActive = i === pipelineStep;
+                                const isPast = pipelineStep >= 0 && i < pipelineStep;
+                                const isDone = pipelineStep >= 0 && i <= pipelineStep;
+                                return (
+                                    <React.Fragment key={s.label}>
+                                        {i > 0 && (
+                                            <div className="flex-shrink-0 mx-1" style={{ width: '24px', height: '2px', borderRadius: '1px', backgroundColor: isDone ? s.color : (isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'), transition: 'background-color 0.3s' }} />
+                                        )}
+                                        <div className={`flex-1 flex flex-col items-center gap-1 transition-all duration-300 ${isActive ? 'scale-110' : ''}`}>
+                                            <div className="w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300"
+                                                style={{
+                                                    backgroundColor: isDone ? s.color + (isDark ? '20' : '15') : (isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.04)'),
+                                                    border: `2px solid ${isDone ? s.color : (isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)')}`,
+                                                    boxShadow: isActive ? `0 0 12px ${s.color}30` : 'none',
+                                                }}>
+                                                {isPast && !isActive ? (
+                                                    <i className="ph ph-check-bold text-xs text-emerald-400"></i>
+                                                ) : (
+                                                    <div className="w-2 h-2 rounded-full transition-all duration-300" style={{ backgroundColor: isDone ? s.color : (isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)') }} />
+                                                )}
+                                            </div>
+                                            <span className="text-[9px] font-medium text-center leading-tight transition-colors duration-300" style={{ color: isDone ? s.color : (isDark ? '#4b5563' : '#9ca3af') }}>{s.label}</span>
+                                        </div>
+                                    </React.Fragment>
+                                );
+                            })}
+                        </div>
+                    </div>
+
+                    {/* ── DECISION RATIONALE ── */}
+                    <div className={`mb-3 flex-shrink-0 p-3 rounded-xl overflow-hidden ${isDark ? 'bg-white/[0.02] border border-white/5' : 'bg-gray-50 border border-gray-200'}`} style={{ height: '140px' }}>
+                        {lastDecision ? (
+                          <div>
+                            <div className={`text-[9px] uppercase font-bold tracking-wider mb-2 ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>Why <span className="text-emerald-400">{lastDecision.pod}</span> won</div>
+                            {lastDecision.factors ? (
+                                <div>
+                                    <div className="space-y-1.5 mb-2">
+                                        {[
+                                            { label: 'Short queue', desc: `${Math.abs(Math.round(lastDecision.factors.qPts / 4.2))} pending requests`, pts: lastDecision.factors.qPts, icon: 'ph-queue' },
+                                            { label: 'KV cache reuse', desc: `${Math.round(lastDecision.factors.kvPts / 0.38)}% prefix cached`, pts: lastDecision.factors.kvPts, icon: 'ph-database' },
+                                            { label: 'GPU headroom', desc: 'Below saturation threshold', pts: lastDecision.factors.gpuPts, icon: 'ph-cpu' },
+                                            { label: 'Fast first token', desc: `~${Math.abs(Math.round(lastDecision.factors.ttftPts * 14))}ms estimated TTFT`, pts: lastDecision.factors.ttftPts, icon: 'ph-timer' },
+                                            { label: 'LoRA adapter loaded', desc: `Model weights in ${lastDecision.gpu} memory`, pts: lastDecision.factors.loraPts, icon: 'ph-plug' },
+                                        ].filter(f => f.pts !== 0).map(f => (
+                                            <div key={f.label} className="flex items-center gap-2">
+                                                <i className={`ph ${f.icon} text-xs`} style={{ color: f.pts > 0 ? '#10b981' : '#ef4444' }}></i>
+                                                <span className={`text-[10px] font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>{f.label}</span>
+                                                <span className={`text-[10px] ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>{f.desc}</span>
+                                                <div className="flex-1 flex justify-end items-center gap-1.5">
+                                                    <div className={`h-1 rounded-full ${isDark ? 'bg-white/5' : 'bg-gray-200'}`} style={{ width: '48px' }}>
+                                                        <div className="h-full rounded-full" style={{ width: `${Math.min(100, Math.abs(f.pts) / 25 * 100)}%`, backgroundColor: f.pts > 0 ? '#10b981' : '#ef4444' }} />
+                                                    </div>
+                                                    <span className={`text-[10px] font-mono font-bold w-10 text-right ${f.pts > 0 ? 'text-emerald-400' : 'text-red-400'}`}>{f.pts > 0 ? '+' : ''}{f.pts.toFixed(1)}</span>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <div className={`flex items-center justify-between pt-2 border-t ${isDark ? 'border-white/5' : 'border-gray-200'}`}>
+                                        <span className={`text-[10px] font-bold ${isDark ? 'text-gray-200' : 'text-gray-800'}`}>EPP Score</span>
+                                        <span className="text-sm font-bold font-mono text-emerald-400">{lastDecision.factors.total} pts</span>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className={`text-xs ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>Round-robin — no scoring. Pod selected randomly.</div>
+                            )}
+                          </div>
+                        ) : (
+                            <div className={`text-xs ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>Waiting for first routing decision...</div>
+                        )}
+                    </div>
+
+                    {/* ── ROUTING LOG ── */}
+                    <div className={`flex items-center gap-2 pb-2 mb-1 border-b flex-shrink-0 ${isDark ? 'border-white/10' : 'border-gray-200'}`}>
+                        <div className={`text-[9px] uppercase font-bold tracking-wider ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>Routing Log</div>
+                        <span className={`text-[9px] font-mono ml-auto ${isDark ? 'text-gray-600' : 'text-gray-500'}`}>{log.length} events</span>
+                    </div>
+                    <div className={`flex items-center gap-2 pb-1 mb-1 flex-shrink-0`}>
+                        <div className={`flex-[3] text-[9px] font-bold uppercase tracking-wider ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Request</div>
+                        <div className={`w-20 text-[9px] font-bold uppercase tracking-wider ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Model</div>
+                        <div className={`w-20 text-[9px] font-bold uppercase tracking-wider ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Pod</div>
+                        <div className={`w-14 text-[9px] font-bold uppercase tracking-wider text-right ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>TTFT</div>
+                        <div className={`flex-[2] text-[9px] font-bold uppercase tracking-wider text-right ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Decision</div>
+                    </div>
+                    <div className="flex flex-col gap-0.5 overflow-hidden" style={{ height: '210px' }}>
+                        {log.map((entry, i) => {
+                            const isNewest = i === 0;
+                            const row = (
+                                <div className="flex items-center gap-2 py-2 px-2 rounded-lg" style={{
+                                    backgroundColor: entry.isGood ? (isDark ? 'rgba(16,185,129,0.10)' : 'rgba(16,185,129,0.08)') : (isDark ? 'rgba(239,68,68,0.08)' : 'rgba(239,68,68,0.06)'),
+                                    opacity: i === log.length - 1 && log.length >= 6 ? 0.4 : 1,
+                                }}>
+                                    <div className={`flex-[3] text-xs truncate ${isDark ? 'text-gray-200' : 'text-gray-800'}`}>"{entry.text}"</div>
+                                    <div className={`w-20 text-xs font-mono ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>{entry.model.replace('llama-3-', 'L3-')}</div>
+                                    <div className={`w-20 text-xs font-bold ${entry.isGood ? 'text-emerald-400' : (isDark ? 'text-gray-400' : 'text-gray-500')}`}>{entry.pod} <span className={`font-normal text-[10px] ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>{entry.gpu}</span></div>
+                                    <div className={`w-14 text-xs font-mono text-right ${entry.ttft < 200 ? 'text-emerald-400' : entry.ttft < 300 ? 'text-f5-orange' : 'text-red-400'}`}>{entry.ttft}ms</div>
+                                    <div className={`flex-[2] text-xs text-right truncate ${entry.isGood ? (isDark ? 'text-gray-300' : 'text-gray-600') : 'text-orange-400'}`}>{entry.reason}</div>
+                                </div>
+                            );
+                            return isNewest ? (
+                                <motion.div key={entry.id} initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>{row}</motion.div>
+                            ) : <div key={entry.id}>{row}</div>;
+                        })}
+                    </div>
+
+                    {/* Status */}
+                    <div className={`mt-4 pt-3 border-t text-xs font-medium flex-shrink-0 ${isDark ? 'border-white/5' : 'border-gray-200'} ${nginxActive ? 'text-f5-green' : (isDark ? 'text-gray-500' : 'text-gray-500')}`}>
+                        {nginxActive ? 'NGINX Gateway Fabric + EPP · KV-cache aware scoring · LoRA adapter routing' : 'Round-robin routing · No KV-cache awareness · No pod scoring'}
+                    </div>
+                </div>
+            );
+        };
+
         const INFERENCE_SIDEBAR = [
             { id: 'uc-routing', label: 'LLM Request Routing' },
             { id: 'uc-caching', label: 'Semantic Caching' },
@@ -2132,6 +2340,7 @@
             { id: 'uc-rag', label: 'RAG Pipeline' },
             { id: 'uc-mcp', label: 'MCP Server Protection' },
             { id: 'uc-nim', label: 'NIM Prompt Classification' },
+            { id: 'uc-epp', label: 'EPP Inference Router' },
         ];
 
         const InferenceTab = () => {
@@ -2242,6 +2451,21 @@
                             { label: 'Routing', before: 'Round-robin', after: 'Policy-driven', change: 'Complexity-aware' },
                         ]}
                         simulation={SimNIMClassification}
+                    />
+
+                    <UseCase
+                        id="uc-epp"
+                        title="EPP Inference Router"
+                        description="NGINX Gateway Fabric with the Endpoint Picker Protocol performs KV-cache-aware pod scheduling for vLLM workloads in Kubernetes. The ext-proc filter intercepts requests, extracts the model name, looks up the InferencePool, scores each pod on queue depth, KV cache hit rate, GPU utilization, TTFT, and LoRA adapter availability — then routes to the optimal pod."
+                        products={[
+                            { key: 'nginx', label: 'NGINX', icon: 'ph-globe' },
+                        ]}
+                        metrics={[
+                            { label: 'Routing', before: 'Round-robin', after: 'KV-cache aware', change: 'EPP scoring' },
+                            { label: 'TTFT', before: '~400ms avg', after: '~170ms avg', change: '57% faster' },
+                            { label: 'GPU Efficiency', before: 'Unbalanced', after: 'Load-balanced', change: 'Per-pod metrics' },
+                        ]}
+                        simulation={SimEPPRouter}
                     />
                 </TabLayout>
             );
