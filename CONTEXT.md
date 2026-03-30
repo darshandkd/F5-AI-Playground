@@ -1,7 +1,7 @@
 # F5 AI Playground — Complete Project Context
 
-> **Last updated:** 2025-03-30
-> **File:** `index.html` — ~10,437 lines, single-file React application
+> **Last updated:** 2026-03-30
+> **File:** `index.html` — ~11,520 lines, single-file React application
 > **GitHub:** https://github.com/darshandkd/F5-AI-Playground
 > **Backups:** v1 through v13 backup files in project root
 
@@ -69,13 +69,25 @@ App
 
 ## 4. Simulation Patterns
 
-### Chat-Style Sims (Prompt Injection, Red Team, DLP)
+### Chat-Style Sims (Prompt Injection, DLP)
 - Persistent messages in scrollable container (fixed height: 280-320px)
 - Messages stay until Reset clicked
 - Pause/Resume + Reset buttons
 - Auto-cycle with immediate first run (500ms kickoff)
 - Message roles: attacker/agent (left, slate bg), system (centered pill), blocked/vulnerable/remediate (right, colored)
 - `scanning` messages replaced with static checkmark after response arrives
+
+### SVG Particle Sim (AI Red Teaming)
+- 5 autonomous agents fire attacks via SVG cubic Bezier curves to LLM target
+- Base paths use `<linearGradient>` per agent (color fades 0.25→0.7 opacity), stroke-width 4
+- Dashed flow overlay via CSS `.rt-flow-line` (stroke-dasharray: 6 12, 0.8s animation)
+- Particles: SVG `<circle>` r=4 animated along path via `getPointAtLength()` + `requestAnimationFrame` (800ms, ease-in-out)
+- Agent cards with color-tinted backgrounds, origin dots, scale+glow on fire
+- LIVE_EXECUTION_LOGS terminal (180px, dark bg, timestamped color-coded entries)
+- Pause/Resume/Reset controls; log scroll-lock (user scroll-up disables auto-scroll)
+- Stable callback refs (`drawPathsRef`, `fireAttackRef`) prevent useEffect re-trigger loops
+- Middle agent forced arc: `bow = dy < 60 ? 50 : 0` on first Bezier control point
+- Sim container minHeight: 680px
 
 ### Log-Style Sims (all others)
 - Top-to-bottom prepend: `[entry, ...prev].slice(0, 6)`

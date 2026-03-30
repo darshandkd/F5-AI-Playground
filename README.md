@@ -14,10 +14,11 @@ Simulate real F5 product scenarios with live, animated demos:
 - **NIM Prompt Classification** — NVIDIA NIM + F5 iRules classify query complexity for cost-optimized routing
 - **Semantic Caching** — See cache hits reduce token costs by 70%+
 - **Prompt Injection Defense** — Test guardrails against injection attacks in real-time
-- **DLP, Compliance, API Protection** — 15+ interactive simulations across Inference, Safety, and Data Delivery
+- **AI Red Teaming** — Watch 5 autonomous agents attack an LLM with SVG particle animations, live execution logs, and pause/resume controls
+- **DLP, Compliance, API Protection** — 18+ interactive simulations across Inference, Safety, and Data Delivery
 
 ### For Anyone Learning AI
-Explore 10 animated concept explainers — no prior knowledge required:
+Explore 11 animated concept explainers — no prior knowledge required:
 - **How LLMs Think** — Type a prompt, watch it flow through tokenization → embeddings → 3D vector space → attention → prediction
 - **Context** — See what happens when a context window fills up and overflows
 - **Vectors & RAG** — Understand similarity search, vector databases, and retrieval-augmented generation
@@ -43,7 +44,7 @@ No npm, no build, no dependencies to install. Everything loads from CDN. Works i
 
 | | |
 |---|---|
-| **Single file** | `index.html` (~9,200 lines) — entire app in one file |
+| **Single file** | `index.html` (~11,500 lines) — entire app in one file |
 | **Framework** | React 18 (CDN) with Babel in-browser JSX compilation |
 | **Styling** | Tailwind CSS (CDN) with custom dark/light theme system |
 | **Animations** | Framer Motion for transitions, Three.js for 3D visualizations |
@@ -53,11 +54,11 @@ No npm, no build, no dependencies to install. Everything loads from CDN. Works i
 ### App Structure
 ```
 Landing Page (5 tiles)
- ├── Inference (7 use-cases with product toggles)
+ ├── Inference (8 use-cases with product toggles)
  ├── Safety & Security (5 use-cases)
  ├── Data Delivery (5 use-cases)
- ├── AI Concepts (10 interactive explainers)
- └── F5 Products (8 product cards)
+ ├── AI Concepts (11 interactive explainers)
+ └── F5 Products (9 product cards)
 ```
 
 ---
@@ -78,9 +79,10 @@ Landing Page (5 tiles)
 
 | Product | Simulations |
 |---------|-------------|
-| F5 BNK (BlueField-3 DPU) | LLM Routing, Semantic Caching, GPU Utilization, Token Governance, RAG Pipeline, MCP Protection, NIM Classification |
+| F5 BNK (BlueField-3 DPU) | LLM Routing, Semantic Caching, GPU Utilization, Token Governance, RAG Pipeline, MCP Protection, NIM Classification, EPP Inference Router |
 | F5 AI Guardrails (CalypsoAI) | Prompt Injection Defense, DLP, Compliance & Governance |
-| F5 AI Red Team (CalypsoAI) | Adversarial Testing |
+| F5 AI Red Team (CalypsoAI) | Adversarial Testing (SVG multi-agent attack visualization) |
+| F5 AI Remediate (CalypsoAI) | Auto-generated guardrails from Red Team findings |
 | F5 SSL Orchestrator | Shadow AI Detection, Encrypted Traffic Inspection |
 | F5 Distributed Cloud | API Protection, Edge & Multi-Cloud Delivery |
 | F5 NGINX | API Protection, Edge & Multi-Cloud Delivery |
@@ -102,4 +104,5 @@ Landing Page (5 tiles)
 | Context | Context windows, overflow behavior, compaction, note-taking, sub-agents |
 | Vectors | Embeddings, similarity search, vector databases, RAG pipeline |
 | Agents | Agent loop, workflow patterns, multi-agent orchestration |
+| MCP Protocol | USB-C analogy, horizontal pipeline, terminal demo, real-world servers |
 | Inference | Prefill/decode phases, cost calculation, speed tricks, smart routing |
