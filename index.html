@@ -195,6 +195,9 @@
         }
         .help-tip-popup { opacity: 0; pointer-events: none; transition: opacity 0.15s; position: fixed; z-index: 9999; }
         .help-tip-popup.visible { opacity: 1; }
+        .rt-flow-line { stroke-dasharray: 6 12; animation: rtFlow 0.8s linear infinite; }
+        @keyframes rtFlow { from { stroke-dashoffset: 18; } to { stroke-dashoffset: 0; } }
+        .rt-particle { filter: drop-shadow(0 0 6px currentColor); }
         input[type="range"].range-visible { -webkit-appearance: none; appearance: none; height: 6px; border-radius: 9999px; outline: none; background: transparent; }
         input[type="range"].range-visible::-webkit-slider-runnable-track { height: 6px; border-radius: 9999px; background: rgba(255,255,255,0.08); }
         input[type="range"].range-visible::-moz-range-track { height: 6px; border-radius: 9999px; background: rgba(255,255,255,0.08); }
@@ -736,7 +739,7 @@
                     </div>
 
                     {/* Simulation with controls overlay */}
-                    <div className={`sim-container ${isDark ? 'glass-panel' : 'light-glass'} mb-5 relative`} style={{ minHeight: '520px' }}>
+                    <div className={`sim-container ${isDark ? 'glass-panel' : 'light-glass'} mb-5 relative`} style={{ minHeight: '680px' }}>
                         {/* F5 product toggles inside sim */}
                         <div className="absolute z-20 flex items-center gap-2" style={{ top: '12px', right: '12px' }}>
                             {products.map(p => {
@@ -1350,12 +1353,28 @@
                 return () => clearInterval(interval);
             }, [active, hotSets]);
 
+            const avgLoad = Math.round(bars.reduce((s, v) => s + v, 0) / bars.length);
+            const maxLoad = Math.round(Math.max(...bars));
+            const minLoad = Math.round(Math.min(...bars));
+            const hotCount = bars.filter(b => b > 85).length;
+            const idleCount = bars.filter(b => b < 30).length;
+
             return (
-                <div className="p-6 h-full min-h-0 flex flex-col justify-center gap-4">
-                    <div className="flex items-end justify-center gap-3 h-40">
+                <div className="px-6 pt-16 pb-3 h-full min-h-0 flex flex-col gap-3">
+                    {/* Explanation */}
+                    <div className={`px-3 py-2 rounded-lg border-l-4 flex-shrink-0 ${active ? 'border-f5-cyan' : 'border-orange-500'} ${isDark ? (active ? 'bg-f5-cyan/5' : 'bg-orange-500/5') : (active ? 'bg-cyan-50' : 'bg-orange-50')}`}>
+                        <p className={`text-xs leading-relaxed ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                            {active
+                                ? 'F5 BNK offloads scheduling to the BlueField-3 DPU, distributing inference requests evenly across all GPUs. Each GPU operates near the optimal ~65% zone — maximizing throughput without thermal throttling.'
+                                : 'Without DPU-assisted scheduling, the CPU assigns requests unevenly. Some GPUs overheat at 90%+ while others sit idle below 30% — wasting expensive compute and increasing latency.'}
+                        </p>
+                    </div>
+
+                    {/* GPU bars */}
+                    <div className="flex items-end justify-center gap-3 flex-1 min-h-0">
                         {bars.map((load, i) => (
-                            <div key={i} className="flex-1 flex flex-col items-center gap-1">
-                                <div className={`w-full rounded-t-lg relative overflow-hidden h-36 ${isDark ? 'bg-white/5' : 'bg-gray-100'}`}>
+                            <div key={i} className="flex-1 flex flex-col items-center gap-1 h-full">
+                                <div className={`w-full rounded-t-lg relative overflow-hidden flex-1 ${isDark ? 'bg-white/5' : 'bg-gray-100'}`}>
                                     <motion.div
                                         className={`absolute bottom-0 w-full rounded-t-lg transition-colors duration-300 ${
                                             load > 85 ? 'bg-red-500' : (load < 30 ? (isDark ? 'bg-gray-600' : 'bg-gray-300') : (active ? 'bg-f5-cyan' : 'bg-orange-500'))
@@ -1372,14 +1391,257 @@
                             </div>
                         ))}
                     </div>
-                    <div className={`text-center text-[10px] font-bold uppercase tracking-wider ${active ? 'text-f5-green' : 'text-orange-500'}`}>
-                        {active ? 'DPU Offload: Balanced utilization ~65%' : 'CPU bottleneck: Uneven GPU utilization'}
+
+                    {/* Stats row */}
+                    <div className="grid grid-cols-4 gap-3 flex-shrink-0">
+                        <div className={`p-2 rounded-lg text-center ${isDark ? 'bg-white/[0.03]' : 'bg-gray-50'}`}>
+                            <div className={`text-[9px] uppercase ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>Average</div>
+                            <div className={`text-sm font-bold font-mono ${active ? 'text-f5-cyan' : (avgLoad > 70 ? 'text-orange-400' : (isDark ? 'text-gray-300' : 'text-gray-700'))}`}>{avgLoad}%</div>
+                        </div>
+                        <div className={`p-2 rounded-lg text-center ${isDark ? 'bg-white/[0.03]' : 'bg-gray-50'}`}>
+                            <div className={`text-[9px] uppercase ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>Spread</div>
+                            <div className={`text-sm font-bold font-mono ${active ? 'text-f5-green' : 'text-red-400'}`}>{maxLoad - minLoad}%</div>
+                        </div>
+                        <div className={`p-2 rounded-lg text-center ${isDark ? 'bg-white/[0.03]' : 'bg-gray-50'}`}>
+                            <div className={`text-[9px] uppercase ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>Overloaded</div>
+                            <div className={`text-sm font-bold font-mono ${hotCount > 0 ? 'text-red-400' : 'text-f5-green'}`}>{hotCount} <span className="text-[9px] font-normal">of 8</span></div>
+                        </div>
+                        <div className={`p-2 rounded-lg text-center ${isDark ? 'bg-white/[0.03]' : 'bg-gray-50'}`}>
+                            <div className={`text-[9px] uppercase ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>Idle</div>
+                            <div className={`text-sm font-bold font-mono ${idleCount > 0 ? 'text-orange-400' : 'text-f5-green'}`}>{idleCount} <span className="text-[9px] font-normal">of 8</span></div>
+                        </div>
+                    </div>
+
+                    {/* Status */}
+                    <div className={`text-center text-xs font-medium flex-shrink-0 ${active ? 'text-f5-green' : 'text-orange-500'}`}>
+                        {active ? 'BNK DPU: Balanced scheduling · Optimal throughput · No thermal throttling' : 'CPU scheduling: Hotspots + idle GPUs · Wasted compute · Latency spikes'}
                     </div>
                 </div>
             );
         };
 
         // Simulation: Token Governance
+        const SimTokenGovChatNew = ({ active, toggles = {} }) => {
+            const { isDark } = useTheme();
+            const bnkActive = toggles.bnk || false;
+            const [messages, setMessages] = useState([]);
+            const [processing, setProcessing] = useState(false);
+            const [paused, setPaused] = useState(false);
+            const [budgets, setBudgets] = useState({ Enterprise: 0, Standard: 0, 'Free Tier': 0 });
+            const budgetsRef = useRef({ Enterprise: 0, Standard: 0, 'Free Tier': 0 });
+            const idxRef = useRef(0);
+            const timerRef = useRef(null);
+            const chatRef = useRef(null);
+
+            const tiers = {
+                Enterprise: { budget: 500000, color: '#e4002b', models: ['GPT-4o', 'Claude Sonnet', 'GPT-4o-mini', 'Llama 8B'] },
+                Standard: { budget: 100000, color: '#ff6a13', models: ['GPT-4o-mini', 'Llama 8B'] },
+                'Free Tier': { budget: 10000, color: '#00b4d8', models: ['Llama 8B'] },
+            };
+
+            const requests = React.useMemo(() => [
+                { tier: 'Enterprise', model: 'GPT-4o', tokens: 4200, prompt: 'Analyze Q3 revenue trends across regions' },
+                { tier: 'Standard', model: 'GPT-4o-mini', tokens: 2100, prompt: 'Summarize this support ticket' },
+                { tier: 'Free Tier', model: 'Llama 8B', tokens: 1800, prompt: 'What is machine learning?' },
+                { tier: 'Enterprise', model: 'Claude Sonnet', tokens: 3500, prompt: 'Debug this Python auth module' },
+                { tier: 'Free Tier', model: 'GPT-4o', tokens: 12800, prompt: 'Write a 5000-word research paper' },
+                { tier: 'Standard', model: 'Claude Sonnet', tokens: 8500, prompt: 'Generate quarterly board report' },
+                { tier: 'Enterprise', model: 'GPT-4o', tokens: 6800, prompt: 'Create go-to-market strategy' },
+                { tier: 'Free Tier', model: 'Llama 8B', tokens: 5200, prompt: 'Explain Kubernetes networking' },
+                { tier: 'Standard', model: 'GPT-4o-mini', tokens: 3200, prompt: 'Translate customer email to Spanish' },
+                { tier: 'Enterprise', model: 'GPT-4o', tokens: 5100, prompt: 'Generate API test suite' },
+            ], []);
+
+            const addMsg = React.useCallback((msg) => {
+                setMessages(prev => [...prev, { ...msg, id: Date.now() + Math.random() }]);
+                setTimeout(() => { if (chatRef.current) chatRef.current.scrollTop = chatRef.current.scrollHeight; }, 50);
+            }, []);
+
+            const runRequest = React.useCallback((req) => {
+                if (processing) return;
+                setProcessing(true);
+                const tier = tiers[req.tier];
+                const cost = (req.tokens / 1000) * 0.01;
+
+                // Show request
+                addMsg({ role: 'request', tier: req.tier, tierColor: tier.color, model: req.model, tokens: req.tokens, cost, text: req.prompt });
+                // Scanning
+                setTimeout(() => addMsg({ role: 'system', text: bnkActive ? 'Checking tier budget...' : 'No governance', scanning: true }), 600);
+                // Decision
+                setTimeout(() => {
+                    let decision, reason;
+                    if (!bnkActive) {
+                        decision = 'unmetered'; reason = 'No budget enforcement — tokens consumed without tracking';
+                    } else {
+                        const modelAllowed = tier.models.includes(req.model);
+                        const current = budgetsRef.current[req.tier] || 0;
+                        const wouldExceed = (current + req.tokens) > tier.budget;
+                        if (!modelAllowed) {
+                            decision = 'blocked'; reason = `${req.model} is not available on the ${req.tier} tier`;
+                        } else if (wouldExceed) {
+                            decision = 'blocked'; reason = `Budget exceeded — ${(current/1000).toFixed(0)}K of ${(tier.budget/1000).toFixed(0)}K tokens used`;
+                        } else if ((current + req.tokens) > tier.budget * 0.85) {
+                            decision = 'throttled'; reason = `Approaching limit — ${Math.round((current + req.tokens) / tier.budget * 100)}% of budget used`;
+                            budgetsRef.current = { ...budgetsRef.current, [req.tier]: current + req.tokens };
+                            setBudgets({ ...budgetsRef.current });
+                        } else {
+                            decision = 'allowed'; reason = `${req.tokens.toLocaleString()} tokens · $${cost.toFixed(3)} · ${Math.round((current + req.tokens) / tier.budget * 100)}% of budget`;
+                            budgetsRef.current = { ...budgetsRef.current, [req.tier]: current + req.tokens };
+                            setBudgets({ ...budgetsRef.current });
+                        }
+                    }
+
+                    setMessages(prev => {
+                        const withoutScan = prev.filter(m => !m.scanning);
+                        return [...withoutScan,
+                            { id: Date.now() + 0.1, role: 'system', text: bnkActive ? (decision === 'allowed' ? 'Budget OK' : decision === 'throttled' ? 'Warning' : 'Denied') : 'No check', scanning: false },
+                            { id: Date.now() + 0.2, role: decision, text: reason, tier: req.tier, tierColor: tier.color },
+                        ];
+                    });
+                    setTimeout(() => { if (chatRef.current) chatRef.current.scrollTop = chatRef.current.scrollHeight; }, 50);
+                    setProcessing(false);
+                }, 1800);
+            }, [processing, bnkActive, addMsg]);
+
+            const handleReset = () => { setMessages([]); setProcessing(false); setPaused(false); budgetsRef.current = { Enterprise: 0, Standard: 0, 'Free Tier': 0 }; setBudgets({ Enterprise: 0, Standard: 0, 'Free Tier': 0 }); clearInterval(timerRef.current); };
+            const handlePause = () => { setPaused(p => !p); };
+
+            useEffect(() => { handleReset(); idxRef.current = 0; }, [bnkActive]);
+
+            useEffect(() => {
+                if (paused) { clearInterval(timerRef.current); return; }
+                const fire = () => { if (!processing) { const req = requests[idxRef.current % requests.length]; idxRef.current++; runRequest(req); } };
+                const kickoff = setTimeout(fire, 500);
+                timerRef.current = setInterval(fire, 4000);
+                return () => { clearTimeout(kickoff); clearInterval(timerRef.current); };
+            }, [processing, paused, requests, runRequest]);
+
+            return (
+                <div className="px-4 pt-16 pb-3 h-full flex flex-col overflow-hidden">
+                    {/* Budget Dashboard */}
+                    <div className="flex items-stretch gap-3 mb-3 flex-shrink-0">
+                        <div className="flex-1 flex gap-2">
+                            {Object.entries(tiers).map(([name, tier]) => {
+                                const used = budgets[name] || 0;
+                                const pct = bnkActive ? Math.min(100, (used / tier.budget) * 100) : 0;
+                                const atLimit = pct >= 85;
+                                return (
+                                    <div key={name} className={`flex-1 px-3 py-2 rounded-xl ${isDark ? 'bg-white/[0.03] border border-white/5' : 'bg-gray-50 border border-gray-200'}`}>
+                                        <div className="flex items-center justify-between mb-1">
+                                            <span className="text-[10px] font-bold" style={{ color: tier.color }}>{name}</span>
+                                            <span className={`text-[9px] font-mono ${atLimit ? 'text-red-400' : (isDark ? 'text-gray-500' : 'text-gray-500')}`}>{bnkActive ? `${(used/1000).toFixed(0)}K/${(tier.budget/1000).toFixed(0)}K` : '—'}</span>
+                                        </div>
+                                        <div className={`h-1.5 rounded-full overflow-hidden ${isDark ? 'bg-white/5' : 'bg-gray-200'}`}>
+                                            <motion.div className="h-full rounded-full" animate={{ width: `${pct}%` }} transition={{ duration: 0.5 }}
+                                                style={{ backgroundColor: atLimit ? '#ef4444' : tier.color }} />
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                        <div className="flex flex-col gap-1.5 flex-shrink-0">
+                            <button onClick={handlePause} className={`flex items-center justify-center gap-1.5 px-4 py-1.5 rounded-xl text-xs font-medium transition-colors ${paused ? 'bg-f5-red/10 text-f5-red border border-f5-red/30' : (isDark ? 'bg-white/5 text-gray-400 hover:bg-white/10 border border-white/5' : 'bg-gray-100 text-gray-500 hover:bg-gray-200 border border-gray-200')}`}>
+                                <i className={`ph ${paused ? 'ph-play' : 'ph-pause'}`}></i>{paused ? 'Resume' : 'Pause'}
+                            </button>
+                            <button onClick={handleReset} className={`flex items-center justify-center gap-1.5 px-4 py-1.5 rounded-xl text-xs font-medium transition-colors ${isDark ? 'bg-white/5 text-gray-400 hover:bg-white/10 border border-white/5' : 'bg-gray-100 text-gray-500 hover:bg-gray-200 border border-gray-200'}`}>
+                                <i className="ph ph-arrow-counter-clockwise"></i>Reset
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Chat */}
+                    <div ref={chatRef} className={`overflow-auto rounded-xl mb-3 px-4 py-3 space-y-2 flex-shrink-0 ${isDark ? 'bg-white/[0.02] border border-white/5' : 'bg-gray-50 border border-gray-200'}`} style={{ height: '300px' }}>
+                        {messages.length === 0 && (
+                            <div className={`flex flex-col items-center justify-center h-full ${isDark ? 'text-gray-600' : 'text-gray-400'}`}>
+                                <i className="ph ph-chart-pie-slice text-3xl mb-2"></i>
+                                <div className="text-xs">Token governance simulation will appear here</div>
+                            </div>
+                        )}
+                        {messages.map(msg => (
+                            <motion.div key={msg.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
+                                {msg.role === 'request' && (
+                                    <div className="flex items-start gap-2">
+                                        <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: msg.tierColor + '20' }}>
+                                            <i className="ph ph-user text-sm" style={{ color: msg.tierColor }}></i>
+                                        </div>
+                                        <div className="flex-1">
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <span className="text-[10px] font-bold" style={{ color: msg.tierColor }}>{msg.tier}</span>
+                                                <span className={`text-[9px] font-mono ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>{msg.model}</span>
+                                                <span className={`text-[9px] font-mono ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>{(msg.tokens/1000).toFixed(1)}K tokens</span>
+                                            </div>
+                                            <div className={`text-xs font-mono leading-relaxed px-3 py-2 rounded-lg rounded-tl-none inline-block ${isDark ? 'bg-slate-700/40 text-gray-200' : 'bg-slate-100 text-gray-800'}`}>{msg.text}</div>
+                                        </div>
+                                    </div>
+                                )}
+                                {msg.role === 'system' && (
+                                    <div className="flex justify-center">
+                                        <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-[9px] ${isDark ? 'bg-white/[0.03]' : 'bg-gray-100'} ${msg.scanning ? 'text-f5-orange' : 'text-emerald-400'}`}>
+                                            {msg.scanning ? <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: 'linear' }} className="w-3 h-3 border border-current border-t-transparent rounded-full"></motion.div> : <i className="ph ph-check-circle text-xs"></i>}
+                                            {msg.text}
+                                        </div>
+                                    </div>
+                                )}
+                                {msg.role === 'allowed' && (
+                                    <div className="flex items-start gap-2 justify-end">
+                                        <div className={`px-3 py-2 rounded-lg rounded-tr-none border-2 border-emerald-500/40 ${isDark ? 'bg-emerald-500/10' : 'bg-emerald-50'}`}>
+                                            <div className="flex items-center gap-1.5 mb-0.5">
+                                                <i className="ph ph-check-circle text-emerald-400"></i>
+                                                <span className="text-[10px] font-bold text-emerald-400">ALLOWED</span>
+                                            </div>
+                                            <div className={`text-[10px] ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>{msg.text}</div>
+                                        </div>
+                                        <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 bg-emerald-500/20"><i className="ph ph-check-circle text-emerald-400 text-sm"></i></div>
+                                    </div>
+                                )}
+                                {msg.role === 'throttled' && (
+                                    <div className="flex items-start gap-2 justify-end">
+                                        <div className={`px-3 py-2 rounded-lg rounded-tr-none border-2 border-f5-orange/40 ${isDark ? 'bg-f5-orange/10' : 'bg-orange-50'}`}>
+                                            <div className="flex items-center gap-1.5 mb-0.5">
+                                                <i className="ph ph-warning text-f5-orange"></i>
+                                                <span className="text-[10px] font-bold text-f5-orange">THROTTLED</span>
+                                            </div>
+                                            <div className={`text-[10px] ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>{msg.text}</div>
+                                        </div>
+                                        <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 bg-f5-orange/20"><i className="ph ph-warning text-f5-orange text-sm"></i></div>
+                                    </div>
+                                )}
+                                {msg.role === 'blocked' && (
+                                    <div className="flex items-start gap-2 justify-end">
+                                        <div className={`px-3 py-2 rounded-lg rounded-tr-none border-2 border-red-500/40 ${isDark ? 'bg-red-500/10' : 'bg-red-50'}`}>
+                                            <div className="flex items-center gap-1.5 mb-0.5">
+                                                <i className="ph ph-prohibit text-red-400"></i>
+                                                <span className="text-[10px] font-bold text-red-400">BLOCKED</span>
+                                            </div>
+                                            <div className={`text-[10px] font-mono ${isDark ? 'text-red-300' : 'text-red-700'}`}>{msg.text}</div>
+                                        </div>
+                                        <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 bg-red-500/20"><i className="ph ph-prohibit text-red-400 text-sm"></i></div>
+                                    </div>
+                                )}
+                                {msg.role === 'unmetered' && (
+                                    <div className="flex items-start gap-2 justify-end">
+                                        <div className={`px-3 py-2 rounded-lg rounded-tr-none border-2 ${isDark ? 'border-white/10 bg-white/[0.02]' : 'border-gray-200 bg-gray-50'}`}>
+                                            <div className="flex items-center gap-1.5 mb-0.5">
+                                                <i className={`ph ph-minus-circle ${isDark ? 'text-gray-500' : 'text-gray-500'}`}></i>
+                                                <span className={`text-[10px] font-bold ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>UNMETERED</span>
+                                            </div>
+                                            <div className={`text-[10px] ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>{msg.text}</div>
+                                        </div>
+                                        <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 ${isDark ? 'bg-white/5' : 'bg-gray-100'}`}><i className={`ph ph-minus-circle text-sm ${isDark ? 'text-gray-500' : 'text-gray-500'}`}></i></div>
+                                    </div>
+                                )}
+                            </motion.div>
+                        ))}
+                    </div>
+
+                    {/* Status */}
+                    <div className={`mt-auto pt-3 border-t text-xs font-medium flex-shrink-0 ${isDark ? 'border-white/5' : 'border-gray-200'} ${bnkActive ? 'text-f5-green' : (isDark ? 'text-gray-500' : 'text-gray-500')}`}>
+                        {bnkActive ? 'F5 BNK · Per-tier budgets · Model access control · DPU-accelerated metering' : 'No governance · All requests unmetered · No budget limits · No model restrictions'}
+                    </div>
+                </div>
+            );
+        };
+
         const SimTokenGov = ({ active, toggles = {} }) => {
             const { isDark } = useTheme();
             const bnkActive = toggles.bnk || false;
@@ -2932,7 +3194,828 @@
         };
 
         // Simulation: Red Teaming
+        const SimRedTeamMultiAgent = ({ active, toggles = {} }) => {
+            const { isDark } = useTheme();
+            const redteamActive = toggles.redteam ?? active;
+            const remediateActive = toggles.remediate || false;
+            const [activeAgent, setActiveAgent] = useState(-1);
+            const [llmState, setLlmState] = useState('idle');
+            const [findings, setFindings] = useState([]);
+            const [totals, setTotals] = useState({ tests: 0, vulns: 0, resisted: 0, policies: 0 });
+            const idxRef = useRef(0);
+            const timerRef = useRef(null);
+
+            const agents = [
+                { id: 'Agent-1', vector: 'Prompt Injection', icon: 'ph-syringe', color: '#e4002b', specialty: 'Instruction override' },
+                { id: 'Agent-2', vector: 'Jailbreak', icon: 'ph-lock-key-open', color: '#a855f7', specialty: 'Safety bypass' },
+                { id: 'Agent-3', vector: 'PII Extraction', icon: 'ph-identification-card', color: '#ff6a13', specialty: 'Data exfiltration' },
+                { id: 'Agent-4', vector: 'Indirect Injection', icon: 'ph-file-search', color: '#00b4d8', specialty: 'RAG poisoning' },
+                { id: 'Agent-5', vector: 'Social Engineering', icon: 'ph-shield-slash', color: '#f59e0b', specialty: 'Access boundary' },
+            ];
+
+            const attacks = React.useMemo(() => [
+                { agentIdx: 0, target: 'GPT-4o', result: 'vuln', severity: 'critical', sevColor: '#ef4444', detail: 'System prompt leaked via instruction override variant #847', guardrail: 'Block instruction override patterns' },
+                { agentIdx: 1, target: 'Llama-3', result: 'resisted', severity: 'medium', sevColor: '#eab308', detail: 'DAN role-play inducement refused — safety training held', guardrail: null },
+                { agentIdx: 2, target: 'Internal-v2', result: 'vuln', severity: 'high', sevColor: '#f97316', detail: 'SSN extracted via few-shot prompting technique', guardrail: 'PII pattern detection in output' },
+                { agentIdx: 3, target: 'Internal-v2', result: 'vuln', severity: 'critical', sevColor: '#ef4444', detail: 'Hidden instruction in RAG doc triggered data exfiltration', guardrail: 'RAG content scanning' },
+                { agentIdx: 4, target: 'GPT-4o', result: 'vuln', severity: 'high', sevColor: '#f97316', detail: 'Tool-use agent gained unauthorized file system access', guardrail: 'Tool privilege boundaries' },
+                { agentIdx: 1, target: 'Claude-3.5', result: 'resisted', severity: 'low', sevColor: '#22c55e', detail: 'Harmful content request refused — content filter held', guardrail: null },
+                { agentIdx: 0, target: 'Claude-3.5', result: 'resisted', severity: 'low', sevColor: '#22c55e', detail: 'Injection attempt #1,203 refused — strong safety alignment', guardrail: null },
+                { agentIdx: 2, target: 'Llama-3', result: 'vuln', severity: 'high', sevColor: '#f97316', detail: 'Email addresses extractable via few-shot technique', guardrail: 'Email pattern scrubbing' },
+                { agentIdx: 3, target: 'GPT-4o', result: 'vuln', severity: 'critical', sevColor: '#ef4444', detail: 'Memorized patient data leaked from training', guardrail: 'Training data memorization filter' },
+                { agentIdx: 4, target: 'Internal-v2', result: 'vuln', severity: 'critical', sevColor: '#ef4444', detail: 'Model weights partially reconstructed via 10K probing queries', guardrail: 'Extraction pattern detection' },
+            ], []);
+
+            useEffect(() => {
+                setFindings([]); setTotals({ tests: 0, vulns: 0, resisted: 0, policies: 0 });
+                setActiveAgent(-1); setLlmState('idle'); idxRef.current = 0;
+                clearInterval(timerRef.current);
+            }, [redteamActive, remediateActive]);
+
+            useEffect(() => {
+                if (!redteamActive) return;
+                const runAttack = () => {
+                    const atk = attacks[idxRef.current % attacks.length];
+                    idxRef.current++;
+                    // Phase 1: agent fires
+                    setActiveAgent(atk.agentIdx);
+                    setLlmState('attacked');
+                    // Phase 2: result
+                    setTimeout(() => {
+                        setLlmState(atk.result);
+                        setFindings(prev => [{ id: Date.now(), ...atk, agent: agents[atk.agentIdx].id }, ...prev].slice(0, 6));
+                        setTotals(prev => ({
+                            tests: prev.tests + 1,
+                            vulns: prev.vulns + (atk.result === 'vuln' ? 1 : 0),
+                            resisted: prev.resisted + (atk.result === 'resisted' ? 1 : 0),
+                            policies: prev.policies + (atk.result === 'vuln' && remediateActive ? 1 : 0),
+                        }));
+                    }, 1200);
+                    // Phase 3: reset
+                    setTimeout(() => { setActiveAgent(-1); setLlmState('idle'); }, 2400);
+                };
+                const kickoff = setTimeout(runAttack, 500);
+                timerRef.current = setInterval(runAttack, 3500);
+                return () => { clearTimeout(kickoff); clearInterval(timerRef.current); };
+            }, [redteamActive, remediateActive, attacks]);
+
+            return (
+                <div className="px-4 pt-16 pb-3 h-full flex flex-col overflow-hidden">
+                    {/* Main visual — 3-column layout */}
+                    <div className="flex items-stretch gap-3 flex-1 min-h-0 mb-3">
+                        {/* Left: Agent swarm */}
+                        <div className="w-[28%] flex flex-col gap-1.5 justify-center">
+                            <div className={`text-[9px] uppercase font-bold tracking-wider mb-1 ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>Agent Swarm</div>
+                            {agents.map((a, i) => {
+                                const isActive = activeAgent === i;
+                                return (
+                                    <motion.div key={a.id}
+                                        animate={{ scale: isActive ? 1.05 : 1, x: isActive ? 8 : 0 }}
+                                        transition={{ duration: 0.3 }}
+                                        className={`px-3 py-2 rounded-lg border-2 transition-all ${
+                                            !redteamActive ? (isDark ? 'border-transparent bg-white/[0.02] opacity-30' : 'border-transparent bg-gray-50 opacity-30')
+                                            : isActive ? (isDark ? 'bg-black/40' : 'bg-white shadow-lg')
+                                            : (isDark ? 'border-transparent bg-white/[0.02]' : 'border-transparent bg-gray-50')
+                                        }`}
+                                        style={{ borderColor: isActive ? a.color : 'transparent' }}>
+                                        <div className="flex items-center gap-2">
+                                            <i className={`ph ${a.icon} text-sm`} style={{ color: a.color }}></i>
+                                            <div className="flex-1 min-w-0">
+                                                <div className="text-[10px] font-bold" style={isActive ? { color: a.color } : {}}>{a.id}</div>
+                                                <div className={`text-[9px] ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>{a.vector}</div>
+                                            </div>
+                                            {isActive && <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: a.color }}></motion.div>}
+                                        </div>
+                                    </motion.div>
+                                );
+                            })}
+                        </div>
+
+                        {/* Center: LLM Target + attack lines */}
+                        <div className="flex-1 flex flex-col items-center justify-center relative">
+                            {/* Attack line animation */}
+                            {activeAgent >= 0 && redteamActive && (
+                                <motion.div initial={{ scaleX: 0 }} animate={{ scaleX: 1 }} transition={{ duration: 0.4 }}
+                                    className="absolute left-0 right-[50%] top-1/2 -translate-y-1/2 h-0.5 origin-left rounded-full"
+                                    style={{ backgroundColor: agents[activeAgent].color + '60' }} />
+                            )}
+                            {/* LLM node */}
+                            <motion.div
+                                animate={{ scale: llmState === 'attacked' ? 1.1 : 1 }}
+                                transition={{ duration: 0.2 }}
+                                className={`w-28 h-28 rounded-2xl flex flex-col items-center justify-center border-2 transition-all duration-300 ${
+                                    !redteamActive ? (isDark ? 'border-white/10 bg-white/[0.03]' : 'border-gray-200 bg-gray-50')
+                                    : llmState === 'vuln' ? (isDark ? 'border-red-500/60 bg-red-500/10' : 'border-red-300 bg-red-50')
+                                    : llmState === 'resisted' ? (isDark ? 'border-emerald-500/60 bg-emerald-500/10' : 'border-emerald-300 bg-emerald-50')
+                                    : llmState === 'attacked' ? (isDark ? 'border-f5-orange/60 bg-f5-orange/5' : 'border-orange-300 bg-orange-50')
+                                    : (isDark ? 'border-white/10 bg-white/[0.03]' : 'border-gray-200 bg-gray-50')
+                                }`}
+                                style={llmState === 'vuln' ? { boxShadow: '0 0 20px rgba(239,68,68,0.2)' } : llmState === 'resisted' ? { boxShadow: '0 0 20px rgba(16,185,129,0.2)' } : {}}>
+                                <i className={`ph ph-robot text-2xl mb-1 ${
+                                    llmState === 'vuln' ? 'text-red-400' : llmState === 'resisted' ? 'text-emerald-400' : (isDark ? 'text-gray-500' : 'text-gray-500')
+                                }`}></i>
+                                <div className={`text-xs font-bold ${
+                                    llmState === 'vuln' ? 'text-red-400' : llmState === 'resisted' ? 'text-emerald-400' : (isDark ? 'text-gray-400' : 'text-gray-600')
+                                }`}>LLM Target</div>
+                                <div className={`text-[9px] ${
+                                    llmState === 'vuln' ? 'text-red-400' : llmState === 'resisted' ? 'text-emerald-400' : (isDark ? 'text-gray-600' : 'text-gray-500')
+                                }`}>
+                                    {!redteamActive ? 'Untested' : llmState === 'vuln' ? 'Compromised' : llmState === 'resisted' ? 'Defended' : llmState === 'attacked' ? 'Under attack...' : 'Ready'}
+                                </div>
+                            </motion.div>
+                        </div>
+
+                        {/* Right: Results panel */}
+                        <div className="w-[30%] flex flex-col gap-2">
+                            <div className={`text-[9px] uppercase font-bold tracking-wider mb-1 ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>Results</div>
+                            {/* Counters */}
+                            <div className="grid grid-cols-2 gap-1.5">
+                                {[
+                                    { label: 'Tests', value: totals.tests, color: isDark ? 'text-gray-200' : 'text-gray-800' },
+                                    { label: 'Vulns', value: totals.vulns, color: totals.vulns > 0 ? 'text-red-400' : (isDark ? 'text-gray-500' : 'text-gray-500') },
+                                    { label: 'Resisted', value: totals.resisted, color: totals.resisted > 0 ? 'text-emerald-400' : (isDark ? 'text-gray-500' : 'text-gray-500') },
+                                    { label: 'Guardrails', value: totals.policies, color: totals.policies > 0 ? 'text-f5-cyan' : (isDark ? 'text-gray-500' : 'text-gray-500') },
+                                ].map(s => (
+                                    <div key={s.label} className={`p-2 rounded-lg text-center ${isDark ? 'bg-white/[0.03]' : 'bg-gray-50'}`}>
+                                        <div className={`text-lg font-bold font-mono ${redteamActive ? s.color : (isDark ? 'text-gray-600' : 'text-gray-400')}`}>{redteamActive ? s.value : '?'}</div>
+                                        <div className={`text-[9px] ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>{s.label}</div>
+                                    </div>
+                                ))}
+                            </div>
+                            {/* Latest finding */}
+                            <div className={`flex-1 overflow-auto rounded-lg p-2 space-y-1 ${isDark ? 'bg-white/[0.02]' : 'bg-gray-50'}`}>
+                                <div className={`text-[9px] uppercase font-bold tracking-wider ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>Latest Findings</div>
+                                {findings.slice(0, 4).map((f, i) => (
+                                    <motion.div key={f.id} initial={i === 0 ? { opacity: 0, y: -4 } : {}} animate={{ opacity: 1, y: 0 }}
+                                        className={`px-2 py-1.5 rounded text-[10px] ${f.result === 'vuln' ? (isDark ? 'bg-red-500/10' : 'bg-red-50') : (isDark ? 'bg-emerald-500/10' : 'bg-emerald-50')}`}
+                                        style={{ opacity: i === 0 ? 1 : 0.6 }}>
+                                        <div className="flex items-center gap-1.5">
+                                            <span className="font-bold px-1 py-0.5 rounded-sm text-[8px]" style={{ backgroundColor: f.sevColor + '18', color: f.sevColor }}>{f.severity}</span>
+                                            <span className={f.result === 'vuln' ? 'text-red-400' : 'text-emerald-400'}>{f.result === 'vuln' ? '✕' : '✓'}</span>
+                                            <span className={isDark ? 'text-gray-300' : 'text-gray-700'}>{f.agent}</span>
+                                            <span className={`ml-auto text-[9px] ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>{f.target}</span>
+                                        </div>
+                                        {i === 0 && <div className={`mt-1 text-[9px] ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{f.detail}</div>}
+                                        {i === 0 && f.result === 'vuln' && remediateActive && f.guardrail && (
+                                            <div className="mt-1 text-[9px] text-f5-cyan font-medium"><i className="ph ph-first-aid mr-1"></i>Remediate → {f.guardrail}</div>
+                                        )}
+                                    </motion.div>
+                                ))}
+                                {findings.length === 0 && <div className={`text-[10px] ${isDark ? 'text-gray-600' : 'text-gray-400'}`}>{redteamActive ? 'Waiting for results...' : 'Enable Red Team to begin'}</div>}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Status */}
+                    <div className={`pt-3 border-t text-xs font-medium flex-shrink-0 ${isDark ? 'border-white/5' : 'border-gray-200'} ${redteamActive ? 'text-f5-green' : (isDark ? 'text-gray-500' : 'text-gray-500')}`}>
+                        {redteamActive
+                            ? `AI Red Team · ${agents.length} agents active · ${totals.tests} tests run${remediateActive ? ' · AI Remediate generating guardrails' : ''}`
+                            : 'No adversarial testing · Attack surface unknown · Blind deployment'}
+                    </div>
+                </div>
+            );
+        };
+
         const SimRedTeam = ({ active, toggles = {} }) => {
+            const { isDark } = useTheme();
+            const redteamActive = toggles.redteam ?? active;
+            const remediateActive = toggles.remediate || false;
+            const [findings, setFindings] = useState([]);
+            const [totals, setTotals] = useState({ tests: 0, vulns: 0, resisted: 0, policies: 0 });
+            const [targetState, setTargetState] = useState('idle');
+            const containerRef = useRef(null);
+            const svgRef = useRef(null);
+            const pathsRef = useRef([]);
+            const agentTimers = useRef([]);
+            const lastHitTime = useRef(0);
+            const [activeAgents, setActiveAgents] = useState(new Set());
+            const [logs, setLogs] = useState([]);
+            const logsContainerRef = useRef(null);
+            const [paused, setPaused] = useState(false);
+            const pausedRef = useRef(false);
+            const userScrolledUp = useRef(false);
+            const fmtTs = () => { const n = new Date(); return [n.getHours(), n.getMinutes(), n.getSeconds()].map(v => String(v).padStart(2, '0')).join(':') + '.' + String(n.getMilliseconds()).padStart(3, '0'); };
+            const addLog = React.useCallback((type, agentId, agentColor, text) => {
+                setLogs(prev => [...prev, { id: Date.now() + Math.random(), ts: fmtTs(), type, agentId, agentColor, text }].slice(-50));
+            }, []);
+
+            const agents = [
+                { id: 'Agent-1', vector: 'Prompt Injection', icon: 'ph-syringe', color: '#e4002b' },
+                { id: 'Agent-2', vector: 'Jailbreak', icon: 'ph-lock-key-open', color: '#a855f7' },
+                { id: 'Agent-3', vector: 'PII Extraction', icon: 'ph-identification-card', color: '#ff6a13' },
+                { id: 'Agent-4', vector: 'Indirect Injection', icon: 'ph-file-search', color: '#00b4d8' },
+                { id: 'Agent-5', vector: 'Social Engineering', icon: 'ph-shield-slash', color: '#f59e0b' },
+            ];
+
+            const details = [
+                'System prompt leaked via override', 'DAN persona adopted — safety bypassed',
+                'SSN extracted via few-shot technique', 'RAG doc triggered exfiltration',
+                'Unauthorized file access gained', 'Injection refused — alignment held',
+                'Email addresses extractable', 'Content filter blocked harmful output',
+                'Model weights partially reconstructed', 'Privilege boundary held',
+            ];
+            const models = ['GPT-4o', 'Claude-3.5', 'Llama-3', 'Internal-v2'];
+
+            // Draw SVG curves from agent cards to target
+            const drawPaths = React.useCallback(() => {
+                const svg = svgRef.current;
+                const container = containerRef.current;
+                if (!svg || !container) return;
+                const cRect = container.getBoundingClientRect();
+                const target = container.querySelector('#rt-target');
+                if (!target) return;
+                const tRect = target.getBoundingClientRect();
+                const endX = tRect.left - cRect.left;
+                const endY = tRect.top - cRect.top + tRect.height / 2;
+
+                svg.innerHTML = '';
+                pathsRef.current = [];
+                const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+                svg.appendChild(defs);
+
+                agents.forEach((a, i) => {
+                    const card = container.querySelector(`#rt-agent-${i}`);
+                    if (!card) return;
+                    const aRect = card.getBoundingClientRect();
+                    const startX = aRect.right - cRect.left;
+                    const startY = aRect.top - cRect.top + aRect.height / 2;
+                    const cpX = startX + (endX - startX) * 0.5;
+                    // Force visible arc on nearly-flat curves (middle agent)
+                    const dy = Math.abs(startY - endY);
+                    const bow = dy < 60 ? 50 : 0;
+
+                    const d = `M ${startX} ${startY} C ${cpX} ${startY + bow}, ${cpX} ${endY}, ${endX} ${endY}`;
+
+                    // Gradient for agent-colored base path
+                    const gradId = 'rtGrad-' + i;
+                    const grad = document.createElementNS('http://www.w3.org/2000/svg', 'linearGradient');
+                    grad.setAttribute('id', gradId);
+                    grad.setAttribute('x1', '0%');
+                    grad.setAttribute('x2', '100%');
+                    const s1 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
+                    s1.setAttribute('offset', '0%'); s1.setAttribute('stop-color', a.color); s1.setAttribute('stop-opacity', isDark ? '0.15' : '0.25');
+                    grad.appendChild(s1);
+                    const s2 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
+                    s2.setAttribute('offset', '100%'); s2.setAttribute('stop-color', a.color); s2.setAttribute('stop-opacity', isDark ? '0.5' : '0.7');
+                    grad.appendChild(s2);
+                    defs.appendChild(grad);
+
+                    // Base path with gradient stroke
+                    const base = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                    base.setAttribute('d', d);
+                    base.setAttribute('fill', 'none');
+                    base.setAttribute('stroke', 'url(#' + gradId + ')');
+                    base.setAttribute('stroke-width', '4');
+                    svg.appendChild(base);
+
+                    // Flow dashed overlay
+                    const flow = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                    flow.setAttribute('d', d);
+                    flow.setAttribute('fill', 'none');
+                    flow.setAttribute('stroke', a.color);
+                    flow.setAttribute('stroke-width', '1.5');
+                    flow.setAttribute('class', 'rt-flow-line');
+                    flow.setAttribute('opacity', '0.45');
+                    svg.appendChild(flow);
+
+                    pathsRef.current.push({ base, flow, length: base.getTotalLength(), color: a.color });
+                });
+            }, [isDark]);
+
+            // Fire a single agent attack with particle animation
+            const fireAttack = React.useCallback((agentIdx) => {
+                const pd = pathsRef.current[agentIdx];
+                const svg = svgRef.current;
+                if (!pd || !svg || !redteamActive || pausedRef.current) return;
+
+                const isBreach = Math.random() > 0.4;
+                const model = models[Math.floor(Math.random() * models.length)];
+                const agent = agents[agentIdx];
+
+                // Highlight agent card via React state
+                setActiveAgents(prev => new Set([...prev, agentIdx]));
+                addLog('launch', agent.id, agent.color, 'Launching ' + agent.vector + ' against ' + model + '...');
+
+                // Brighten flow line
+                pd.flow.setAttribute('opacity', '1');
+                pd.flow.setAttribute('stroke', '#ffffff');
+
+                // Create particle
+                const particle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                particle.setAttribute('r', '4');
+                particle.setAttribute('fill', agent.color);
+                particle.setAttribute('class', 'rt-particle');
+                particle.style.color = agent.color;
+                svg.appendChild(particle);
+
+                let startTime = null;
+                const dur = 800;
+                const animate = (ts) => {
+                    if (!startTime) startTime = ts;
+                    const p = (ts - startTime) / dur;
+                    if (p < 1) {
+                        const eased = p < 0.5 ? 2 * p * p : -1 + (4 - 2 * p) * p;
+                        const pt = pd.base.getPointAtLength(pd.length * eased);
+                        particle.setAttribute('cx', pt.x);
+                        particle.setAttribute('cy', pt.y);
+                        requestAnimationFrame(animate);
+                    } else {
+                        particle.remove();
+                        // Restore line + agent highlight
+                        pd.flow.setAttribute('opacity', '0.45');
+                        pd.flow.setAttribute('stroke', agent.color);
+                        setActiveAgents(prev => { const next = new Set(prev); next.delete(agentIdx); return next; });
+
+                        // Hit
+                        lastHitTime.current = Date.now();
+                        setTargetState(isBreach ? 'vuln' : 'resisted');
+                        setTimeout(() => { if (Date.now() - lastHitTime.current >= 350) setTargetState('idle'); }, 500);
+
+                        setTotals(prev => ({
+                            tests: prev.tests + 1,
+                            vulns: prev.vulns + (isBreach ? 1 : 0),
+                            resisted: prev.resisted + (isBreach ? 0 : 1),
+                            policies: prev.policies + (isBreach && remediateActive ? 1 : 0),
+                        }));
+                        const detail = details[Math.floor(Math.random() * details.length)];
+                        setFindings(prev => [{ id: Date.now() + agentIdx, agent: agent.id, agentColor: agent.color, result: isBreach ? 'vuln' : 'resisted', target: model, detail, guardrail: isBreach && remediateActive ? detail.split(' ')[0] + ' pattern filter' : null }, ...prev].slice(0, 5));
+                        if (isBreach) {
+                            addLog('breach', agent.id, agent.color, detail + ' [' + model + ']');
+                            if (remediateActive) addLog('remediate', null, null, 'Auto-generating guardrail: ' + detail.split(' ')[0] + ' pattern filter');
+                        } else {
+                            addLog('blocked', agent.id, agent.color, 'Attack resisted by ' + model);
+                        }
+                    }
+                };
+                requestAnimationFrame(animate);
+            }, [redteamActive, remediateActive, addLog]);
+
+            // Stable refs for callbacks — prevents useEffect re-trigger loops
+            const drawPathsRef = useRef(drawPaths);
+            drawPathsRef.current = drawPaths;
+            const fireAttackRef = useRef(fireAttack);
+            fireAttackRef.current = fireAttack;
+
+            // Start/stop independent agent loops
+            useEffect(() => {
+                setFindings([]); setTotals({ tests: 0, vulns: 0, resisted: 0, policies: 0 }); setTargetState('idle');
+                agentTimers.current.forEach(t => clearTimeout(t));
+                agentTimers.current = [];
+                if (!redteamActive) { setLogs([]); setPaused(false); pausedRef.current = false; return; }
+
+                setLogs([
+                    { id: 'sys-1', ts: fmtTs(), type: 'system', agentId: null, agentColor: null, text: 'Initialization complete. Connected to Target LLM cluster.' },
+                    { id: 'sys-2', ts: fmtTs(), type: 'system', agentId: null, agentColor: null, text: 'Orchestrator loading attack vectors...' },
+                    { id: 'sys-3', ts: fmtTs(), type: 'ready', agentId: null, agentColor: null, text: '5 AI Agents ready. Commencing continuous red teaming.' },
+                ]);
+                setTimeout(() => drawPathsRef.current(), 100);
+
+                agents.forEach((_, i) => {
+                    const loop = () => {
+                        fireAttackRef.current(i);
+                        agentTimers.current[i] = setTimeout(loop, 1500 + Math.random() * 3000);
+                    };
+                    agentTimers.current[i] = setTimeout(loop, 300 + Math.random() * 1500);
+                });
+
+                return () => agentTimers.current.forEach(t => clearTimeout(t));
+            }, [redteamActive, remediateActive]);
+
+            // Redraw on resize
+            useEffect(() => {
+                const handleResize = () => { if (redteamActive) drawPathsRef.current(); };
+                window.addEventListener('resize', handleResize);
+                return () => window.removeEventListener('resize', handleResize);
+            }, [redteamActive]);
+
+            // Auto-scroll logs (only if user hasn't scrolled up)
+            useEffect(() => {
+                if (userScrolledUp.current) return;
+                const el = logsContainerRef.current;
+                if (el) el.scrollTop = el.scrollHeight;
+            }, [logs]);
+
+            const handlePause = () => {
+                pausedRef.current = true;
+                setPaused(true);
+                agentTimers.current.forEach(t => clearTimeout(t));
+                agentTimers.current = [];
+                addLog('system', null, null, 'Simulation paused.');
+            };
+
+            const handleResume = () => {
+                pausedRef.current = false;
+                setPaused(false);
+                userScrolledUp.current = false;
+                addLog('system', null, null, 'Simulation resumed.');
+                agents.forEach((_, i) => {
+                    const loop = () => {
+                        fireAttackRef.current(i);
+                        agentTimers.current[i] = setTimeout(loop, 1500 + Math.random() * 3000);
+                    };
+                    agentTimers.current[i] = setTimeout(loop, 200 + Math.random() * 800);
+                });
+            };
+
+            const handleReset = () => {
+                pausedRef.current = false;
+                setPaused(false);
+                userScrolledUp.current = false;
+                agentTimers.current.forEach(t => clearTimeout(t));
+                agentTimers.current = [];
+                setFindings([]);
+                setTotals({ tests: 0, vulns: 0, resisted: 0, policies: 0 });
+                setTargetState('idle');
+                setActiveAgents(new Set());
+                setLogs([
+                    { id: 'r-1', ts: fmtTs(), type: 'system', agentId: null, agentColor: null, text: 'Simulation reset. Reconnected to Target LLM cluster.' },
+                    { id: 'r-2', ts: fmtTs(), type: 'ready', agentId: null, agentColor: null, text: '5 AI Agents ready. Commencing continuous red teaming.' },
+                ]);
+                setTimeout(() => drawPathsRef.current(), 50);
+                agents.forEach((_, i) => {
+                    const loop = () => {
+                        fireAttackRef.current(i);
+                        agentTimers.current[i] = setTimeout(loop, 1500 + Math.random() * 3000);
+                    };
+                    agentTimers.current[i] = setTimeout(loop, 300 + Math.random() * 1500);
+                });
+            };
+
+            return (
+                <div ref={containerRef} className="px-4 pt-16 pb-3 h-full flex flex-col overflow-hidden relative">
+                    {/* SVG overlay */}
+                    <svg ref={svgRef} className="absolute inset-0 w-full h-full pointer-events-none" style={{ zIndex: 0 }}></svg>
+
+                    <div className="flex items-stretch gap-3 flex-1 min-h-0 mb-3 relative" style={{ zIndex: 1 }}>
+                        {/* Left: Agents */}
+                        <div className="w-[24%] flex flex-col justify-between py-1">
+                            {agents.map((a, i) => (
+                                <div key={a.id} id={`rt-agent-${i}`}
+                                    className={`relative px-2.5 py-2 rounded-lg border-2 transition-all duration-200 ${
+                                        !redteamActive ? 'opacity-25 border-transparent' : activeAgents.has(i) ? '' : 'border-transparent'
+                                    }`}
+                                    style={{
+                                        backgroundColor: redteamActive
+                                            ? (activeAgents.has(i) ? (isDark ? a.color + '18' : a.color + '12') : (isDark ? a.color + '0a' : a.color + '08'))
+                                            : (isDark ? 'rgba(255,255,255,0.02)' : '#f3f4f6'),
+                                        ...(activeAgents.has(i) && redteamActive ? { borderColor: a.color, transform: 'scale(1.03)', boxShadow: '0 0 12px ' + a.color + '30' } : {})
+                                    }}>
+                                    <div className="flex items-center gap-2.5">
+                                        <i className={`ph ${a.icon} text-base`} style={{ color: a.color }}></i>
+                                        <div>
+                                            <div className="text-xs font-bold">{a.id}</div>
+                                            <div className={`text-[10px] ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>{a.vector}</div>
+                                        </div>
+                                    </div>
+                                    <div className={`absolute right-0 top-1/2 -translate-y-1/2 translate-x-1 w-2 h-2 rounded-full ${isDark ? 'bg-gray-600' : 'bg-gray-300'}`}></div>
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* Center spacer for curves */}
+                        <div className="flex-1"></div>
+
+                        {/* Target */}
+                        <div className="flex items-center" style={{ zIndex: 2 }}>
+                            <div id="rt-target" className={`w-32 h-32 rounded-2xl flex flex-col items-center justify-center border-2 transition-all duration-200 relative ${
+                                targetState === 'vuln' ? (isDark ? 'border-red-500/60 bg-red-500/10' : 'border-red-300 bg-red-50')
+                                : targetState === 'resisted' ? (isDark ? 'border-emerald-500/60 bg-emerald-500/10' : 'border-emerald-300 bg-emerald-50')
+                                : (isDark ? 'border-white/10 bg-white/[0.03]' : 'border-gray-200 bg-white')
+                            }`} style={targetState === 'vuln' ? { boxShadow: `0 0 30px rgba(239,68,68,0.2)` } : targetState === 'resisted' ? { boxShadow: `0 0 30px rgba(16,185,129,0.2)` } : {}}>
+                                {targetState !== 'idle' && <div className={`absolute -inset-2 rounded-2xl ${targetState === 'vuln' ? 'bg-red-500/10' : 'bg-emerald-500/10'} blur-xl animate-pulse`}></div>}
+                                <i className={`ph ph-robot text-3xl mb-1 ${targetState === 'vuln' ? 'text-red-400' : targetState === 'resisted' ? 'text-emerald-400' : (isDark ? 'text-gray-500' : 'text-gray-500')}`}></i>
+                                <div className={`text-xs font-bold ${targetState === 'vuln' ? 'text-red-400' : targetState === 'resisted' ? 'text-emerald-400' : (isDark ? 'text-gray-400' : 'text-gray-600')}`}>LLM Target</div>
+                                <div className={`text-[10px] font-bold uppercase tracking-wider ${targetState === 'vuln' ? 'text-red-400' : targetState === 'resisted' ? 'text-emerald-400' : (isDark ? 'text-gray-600' : 'text-gray-500')}`}>
+                                    {!redteamActive ? 'Untested' : targetState === 'vuln' ? 'Breached' : targetState === 'resisted' ? 'Defended' : 'Ready'}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Right: Stats */}
+                        <div className="w-[22%] flex flex-col justify-center pl-3">
+                            <div className="grid grid-cols-2 gap-1.5">
+                                {[
+                                    { label: 'Tests', val: totals.tests, color: isDark ? 'text-gray-200' : 'text-gray-800' },
+                                    { label: 'Vulns', val: totals.vulns, color: totals.vulns > 0 ? 'text-red-400' : (isDark ? 'text-gray-600' : 'text-gray-400') },
+                                    { label: 'Resisted', val: totals.resisted, color: totals.resisted > 0 ? 'text-emerald-400' : (isDark ? 'text-gray-600' : 'text-gray-400') },
+                                    { label: 'Guardrails', val: totals.policies, color: totals.policies > 0 ? 'text-f5-cyan' : (isDark ? 'text-gray-600' : 'text-gray-400') },
+                                ].map(s => (
+                                    <div key={s.label} className={`px-2 py-2 rounded-lg text-center ${isDark ? 'bg-white/[0.03]' : 'bg-white border border-gray-100'}`}>
+                                        <div className={`text-lg font-bold font-mono ${redteamActive ? s.color : (isDark ? 'text-gray-600' : 'text-gray-400')}`}>{redteamActive ? s.val : '?'}</div>
+                                        <div className={`text-[10px] ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>{s.label}</div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Live Execution Logs */}
+                    <div className="mt-2 rounded-lg overflow-hidden flex flex-col flex-shrink-0 bg-gray-900" style={{ height: '180px', zIndex: 1, border: '1px solid rgba(55,65,81,0.5)' }}>
+                        <div className="px-3 py-1 flex justify-between items-center bg-gray-800" style={{ borderBottom: '1px solid rgba(55,65,81,0.6)' }}>
+                            <div className="flex items-center gap-2">
+                                <i className="ph ph-terminal-window text-[10px] text-gray-400"></i>
+                                <span className="text-[9px] text-gray-400 font-mono tracking-wider">LIVE_EXECUTION_LOGS</span>
+                            </div>
+                            <div className="flex gap-1">
+                                <div className="w-2 h-2 rounded-full bg-red-500/80"></div>
+                                <div className="w-2 h-2 rounded-full bg-yellow-500/80"></div>
+                                <div className="w-2 h-2 rounded-full bg-green-500/80"></div>
+                            </div>
+                        </div>
+                        <div ref={logsContainerRef} onScroll={() => { const el = logsContainerRef.current; if (el) userScrolledUp.current = el.scrollHeight - el.scrollTop - el.clientHeight > 40; }} className="flex-1 overflow-y-auto px-3 py-1.5 font-mono text-[9px] space-y-0.5">
+                            {logs.map(l => {
+                                const prefix = l.type === 'launch' ? l.agentId : l.type === 'breach' ? 'BREACH' : l.type === 'blocked' ? 'BLOCKED' : l.type === 'remediate' ? 'REMEDIATE' : 'SYSTEM';
+                                const prefixClr = l.type === 'launch' ? l.agentColor : l.type === 'breach' ? '#f87171' : l.type === 'blocked' ? '#34d399' : l.type === 'remediate' ? '#22d3ee' : l.type === 'ready' ? '#34d399' : '#60a5fa';
+                                const textClr = l.type === 'launch' ? '#9ca3af' : prefixClr;
+                                return (
+                                    <div key={l.id}>
+                                        <span style={{ color: '#4b5563' }}>[{l.ts}]</span>{' '}
+                                        <span style={{ color: prefixClr }}>[{prefix}]</span>{' '}
+                                        {(l.type === 'breach' || l.type === 'blocked') && l.agentId && <span style={{ color: l.agentColor }}>[{l.agentId}] </span>}
+                                        <span style={{ color: textClr }}>{l.text}</span>
+                                    </div>
+                                );
+                            })}
+                            {logs.length === 0 && <div style={{ color: '#4b5563' }}>Waiting for Red Team activation...</div>}
+                        </div>
+                    </div>
+
+                    {/* Status + Controls */}
+                    <div className={`pt-2 border-t text-xs font-medium flex-shrink-0 flex items-center justify-between ${isDark ? 'border-white/5' : 'border-gray-200'}`} style={{ zIndex: 1 }}>
+                        <span className={redteamActive ? (paused ? (isDark ? 'text-yellow-400' : 'text-yellow-600') : 'text-f5-green') : (isDark ? 'text-gray-500' : 'text-gray-500')}>
+                            {redteamActive
+                                ? `AI Red Team · ${paused ? 'Paused' : '5 agents active'} · ${totals.tests} tests${remediateActive ? ' · Remediate active' : ''}`
+                                : 'No adversarial testing · Attack surface unknown'}
+                        </span>
+                        {redteamActive && (
+                            <div className="flex items-center gap-2">
+                                <button onClick={paused ? handleResume : handlePause}
+                                    className={`px-3 py-1 rounded-md text-[10px] font-bold transition-colors ${
+                                        paused
+                                            ? (isDark ? 'bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30' : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100')
+                                            : (isDark ? 'bg-yellow-500/20 text-yellow-400 hover:bg-yellow-500/30' : 'bg-yellow-50 text-yellow-600 hover:bg-yellow-100')
+                                    }`}>
+                                    <i className={`ph ${paused ? 'ph-play' : 'ph-pause'} mr-1`}></i>{paused ? 'Resume' : 'Pause'}
+                                </button>
+                                <button onClick={handleReset}
+                                    className={`px-3 py-1 rounded-md text-[10px] font-bold transition-colors ${
+                                        isDark ? 'bg-white/[0.05] text-gray-400 hover:bg-white/10' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                                    }`}>
+                                    <i className="ph ph-arrow-counter-clockwise mr-1"></i>Reset
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        };
+
+        const SimRedTeamSVGOld = ({ active, toggles = {} }) => {
+            const { isDark } = useTheme();
+            const redteamActive = toggles.redteam ?? active;
+            const remediateActive = toggles.remediate || false;
+            const [pulses, setPulses] = useState([false, false, false, false, false]);
+            const [llmHits, setLlmHits] = useState([null, null, null, null, null]);
+            const [findings, setFindings] = useState([]);
+            const [totals, setTotals] = useState({ tests: 0, vulns: 0, resisted: 0, policies: 0 });
+            const roundRef = useRef(0);
+
+            const agents = [
+                { id: 'Agent-1', vector: 'Prompt Injection', icon: 'ph-syringe', color: '#e4002b' },
+                { id: 'Agent-2', vector: 'Jailbreak', icon: 'ph-lock-key-open', color: '#a855f7' },
+                { id: 'Agent-3', vector: 'PII Extraction', icon: 'ph-identification-card', color: '#ff6a13' },
+                { id: 'Agent-4', vector: 'Indirect Injection', icon: 'ph-file-search', color: '#00b4d8' },
+                { id: 'Agent-5', vector: 'Social Engineering', icon: 'ph-shield-slash', color: '#f59e0b' },
+            ];
+
+            const attackRounds = React.useMemo(() => [
+                [
+                    { result: 'vuln', severity: 'critical', sevColor: '#ef4444', target: 'GPT-4o', detail: 'System prompt leaked via override #847', guardrail: 'Block instruction overrides' },
+                    { result: 'resisted', severity: 'low', sevColor: '#22c55e', target: 'Llama-3', detail: 'Role-play refused — safety held', guardrail: null },
+                    { result: 'vuln', severity: 'high', sevColor: '#f97316', target: 'Internal-v2', detail: 'SSN extracted via few-shot prompting', guardrail: 'PII output scrubbing' },
+                    { result: 'vuln', severity: 'critical', sevColor: '#ef4444', target: 'Internal-v2', detail: 'RAG doc triggered data exfiltration', guardrail: 'RAG content scanning' },
+                    { result: 'resisted', severity: 'medium', sevColor: '#eab308', target: 'Claude-3.5', detail: 'Privilege boundary held across 8 attempts', guardrail: null },
+                ],
+                [
+                    { result: 'resisted', severity: 'low', sevColor: '#22c55e', target: 'Claude-3.5', detail: 'Injection #1,203 refused — strong alignment', guardrail: null },
+                    { result: 'vuln', severity: 'high', sevColor: '#f97316', target: 'GPT-4o', detail: 'DAN persona adopted — unrestricted output', guardrail: 'Persona override detection' },
+                    { result: 'vuln', severity: 'high', sevColor: '#f97316', target: 'Llama-3', detail: 'Email addresses extractable via few-shot', guardrail: 'Email pattern filter' },
+                    { result: 'resisted', severity: 'medium', sevColor: '#eab308', target: 'GPT-4o', detail: 'Hidden instruction in doc detected and blocked', guardrail: null },
+                    { result: 'vuln', severity: 'critical', sevColor: '#ef4444', target: 'Internal-v2', detail: 'Model weights partially reconstructed', guardrail: 'Extraction pattern detection' },
+                ],
+            ], []);
+
+            // SVG curve paths from agents to LLM center
+            const paths = [
+                'M 30 18 C 120 18, 140 50, 230 50',
+                'M 30 36 C 100 36, 140 45, 230 50',
+                'M 30 50 C 100 50, 160 50, 230 50',
+                'M 30 64 C 100 64, 140 55, 230 50',
+                'M 30 82 C 120 82, 140 50, 230 50',
+            ];
+
+            useEffect(() => {
+                setFindings([]); setTotals({ tests: 0, vulns: 0, resisted: 0, policies: 0 });
+                setPulses([false,false,false,false,false]); setLlmHits([null,null,null,null,null]);
+                roundRef.current = 0;
+            }, [redteamActive, remediateActive]);
+
+            useEffect(() => {
+                if (!redteamActive) return;
+                const runRound = () => {
+                    const round = attackRounds[roundRef.current % attackRounds.length];
+                    roundRef.current++;
+
+                    // Launch all agents simultaneously with slight stagger for visual depth
+                    round.forEach((atk, i) => {
+                        const stagger = i * 150; // slight offset so they don't overlap perfectly
+                        setTimeout(() => {
+                            setPulses(prev => { const n = [...prev]; n[i] = true; return n; });
+                        }, stagger);
+
+                        // Hit arrives — all within a short window
+                        setTimeout(() => {
+                            setPulses(prev => { const n = [...prev]; n[i] = false; return n; });
+                            setLlmHits(prev => { const n = [...prev]; n[i] = atk.result; return n; });
+                            setFindings(prev => [{ id: Date.now() + i, agent: agents[i].id, agentColor: agents[i].color, ...atk }, ...prev].slice(0, 5));
+                            setTotals(prev => ({
+                                tests: prev.tests + 1,
+                                vulns: prev.vulns + (atk.result === 'vuln' ? 1 : 0),
+                                resisted: prev.resisted + (atk.result === 'resisted' ? 1 : 0),
+                                policies: prev.policies + (atk.result === 'vuln' && remediateActive ? 1 : 0),
+                            }));
+                        }, stagger + 1200);
+                    });
+
+                    // Clear hits after all arrive
+                    setTimeout(() => { setLlmHits([null,null,null,null,null]); }, 4000);
+                };
+
+                const kickoff = setTimeout(runRound, 500);
+                const interval = setInterval(runRound, 6000);
+                return () => { clearTimeout(kickoff); clearInterval(interval); };
+            }, [redteamActive, remediateActive, attackRounds]);
+
+            const anyHit = llmHits.some(h => h !== null);
+            const hasVuln = llmHits.some(h => h === 'vuln');
+
+            return (
+                <div className="px-4 pt-16 pb-3 h-full flex flex-col overflow-hidden">
+                    {/* Main visual */}
+                    <div className={`flex-1 min-h-0 flex items-stretch gap-2 mb-3 rounded-xl p-4 ${isDark ? 'bg-white/[0.02] border border-white/5' : 'bg-gray-50 border border-gray-200'}`}>
+                        {/* Left: Agent nodes */}
+                        <div className="w-[25%] flex flex-col justify-between py-2">
+                            {agents.map((a, i) => (
+                                <motion.div key={a.id}
+                                    animate={{ scale: pulses[i] ? 1.08 : 1, x: pulses[i] ? 6 : 0 }}
+                                    transition={{ duration: 0.3 }}
+                                    className={`px-2.5 py-1.5 rounded-lg border-2 transition-all ${
+                                        !redteamActive ? (isDark ? 'border-transparent bg-white/[0.02] opacity-25' : 'border-transparent bg-gray-100 opacity-25')
+                                        : pulses[i] ? (isDark ? 'bg-black/40' : 'bg-white shadow-md')
+                                        : (isDark ? 'border-transparent bg-white/[0.03]' : 'border-transparent bg-white')
+                                    }`}
+                                    style={{ borderColor: pulses[i] ? a.color : 'transparent' }}>
+                                    <div className="flex items-center gap-1.5">
+                                        <i className={`ph ${a.icon} text-sm`} style={{ color: a.color }}></i>
+                                        <div>
+                                            <div className="text-[10px] font-bold" style={pulses[i] ? { color: a.color } : {}}>{a.id}</div>
+                                            <div className={`text-[8px] ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>{a.vector}</div>
+                                        </div>
+                                        {pulses[i] && <motion.div initial={{ scale: 0 }} animate={{ scale: [1, 1.3, 1] }} transition={{ duration: 0.6, repeat: Infinity }} className="w-1.5 h-1.5 rounded-full ml-auto" style={{ backgroundColor: a.color }}></motion.div>}
+                                    </div>
+                                </motion.div>
+                            ))}
+                        </div>
+
+                        {/* Center: SVG curves + LLM */}
+                        <div className="flex-1 relative">
+                            <svg viewBox="0 0 280 100" className="absolute inset-0 w-full h-full" preserveAspectRatio="none">
+                                <defs>
+                                    {agents.map((a, i) => (
+                                        <React.Fragment key={`defs-${i}`}>
+                                            <radialGradient id={`glow-${i}`}>
+                                                <stop offset="0%" stopColor={a.color} stopOpacity="1" />
+                                                <stop offset="50%" stopColor={a.color} stopOpacity="0.4" />
+                                                <stop offset="100%" stopColor={a.color} stopOpacity="0" />
+                                            </radialGradient>
+                                            <filter id={`blur-${i}`}><feGaussianBlur stdDeviation="1.5" /></filter>
+                                        </React.Fragment>
+                                    ))}
+                                </defs>
+                                {agents.map((a, i) => (
+                                    <React.Fragment key={i}>
+                                        {/* Static faint path */}
+                                        <path d={paths[i]} fill="none" stroke={isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'} strokeWidth="1" />
+                                        {/* Glowing trail when pulse active */}
+                                        {redteamActive && pulses[i] && (
+                                            <React.Fragment>
+                                                {/* Trail glow — wider, blurred, follows same path */}
+                                                <circle r="6" fill={`url(#glow-${i})`} filter={`url(#blur-${i})`}>
+                                                    <animateMotion dur="1.2s" repeatCount="1" fill="freeze">
+                                                        <mpath href={`#path-${i}`} />
+                                                    </animateMotion>
+                                                </circle>
+                                                {/* Core dot — bright, sharp */}
+                                                <circle r="3" fill={a.color}>
+                                                    <animateMotion dur="1.2s" repeatCount="1" fill="freeze">
+                                                        <mpath href={`#path-${i}`} />
+                                                    </animateMotion>
+                                                </circle>
+                                                {/* Inner bright core */}
+                                                <circle r="1.5" fill="white" opacity="0.8">
+                                                    <animateMotion dur="1.2s" repeatCount="1" fill="freeze">
+                                                        <mpath href={`#path-${i}`} />
+                                                    </animateMotion>
+                                                </circle>
+                                            </React.Fragment>
+                                        )}
+                                        {/* Named path for animateMotion reference */}
+                                        <path id={`path-${i}`} d={paths[i]} fill="none" stroke="none" />
+                                        {/* Hit ripple at LLM end */}
+                                        {llmHits[i] && (
+                                            <React.Fragment>
+                                                <circle cx="230" cy="50" r="3" fill={llmHits[i] === 'vuln' ? '#ef4444' : '#10b981'} opacity="0.8">
+                                                    <animate attributeName="r" from="3" to="16" dur="0.6s" repeatCount="1" />
+                                                    <animate attributeName="opacity" from="0.8" to="0" dur="0.6s" repeatCount="1" />
+                                                </circle>
+                                                <circle cx="230" cy="50" r="2" fill={llmHits[i] === 'vuln' ? '#ef4444' : '#10b981'} opacity="0.5">
+                                                    <animate attributeName="r" from="2" to="10" dur="0.4s" repeatCount="1" />
+                                                    <animate attributeName="opacity" from="0.5" to="0" dur="0.4s" repeatCount="1" />
+                                                </circle>
+                                            </React.Fragment>
+                                        )}
+                                    </React.Fragment>
+                                ))}
+                            </svg>
+
+                            {/* LLM Target node (positioned at right-center) */}
+                            <div className="absolute right-0 top-1/2 -translate-y-1/2">
+                                <motion.div animate={{ scale: anyHit ? 1.05 : 1 }} transition={{ duration: 0.2 }}
+                                    className={`w-24 h-24 rounded-2xl flex flex-col items-center justify-center border-2 transition-all duration-300 ${
+                                        !redteamActive ? (isDark ? 'border-white/10 bg-white/[0.03]' : 'border-gray-200 bg-white')
+                                        : hasVuln ? (isDark ? 'border-red-500/50 bg-red-500/10' : 'border-red-300 bg-red-50')
+                                        : anyHit ? (isDark ? 'border-emerald-500/50 bg-emerald-500/10' : 'border-emerald-300 bg-emerald-50')
+                                        : (isDark ? 'border-white/10 bg-white/[0.03]' : 'border-gray-200 bg-white')
+                                    }`}
+                                    style={hasVuln ? { boxShadow: '0 0 24px rgba(239,68,68,0.15)' } : anyHit ? { boxShadow: '0 0 24px rgba(16,185,129,0.15)' } : {}}>
+                                    <i className={`ph ph-robot text-2xl mb-1 ${hasVuln ? 'text-red-400' : anyHit ? 'text-emerald-400' : (isDark ? 'text-gray-500' : 'text-gray-500')}`}></i>
+                                    <div className={`text-[10px] font-bold ${hasVuln ? 'text-red-400' : anyHit ? 'text-emerald-400' : (isDark ? 'text-gray-400' : 'text-gray-600')}`}>LLM Target</div>
+                                    <div className={`text-[8px] ${hasVuln ? 'text-red-400' : anyHit ? 'text-emerald-400' : (isDark ? 'text-gray-600' : 'text-gray-500')}`}>
+                                        {!redteamActive ? 'Untested' : hasVuln ? 'Breached' : anyHit ? 'Defended' : 'Ready'}
+                                    </div>
+                                </motion.div>
+                            </div>
+                        </div>
+
+                        {/* Right: Stats + findings */}
+                        <div className="w-[28%] flex flex-col gap-2">
+                            <div className="grid grid-cols-2 gap-1.5">
+                                {[
+                                    { label: 'Tests', val: totals.tests, color: isDark ? 'text-gray-200' : 'text-gray-800' },
+                                    { label: 'Vulns', val: totals.vulns, color: totals.vulns > 0 ? 'text-red-400' : (isDark ? 'text-gray-600' : 'text-gray-400') },
+                                    { label: 'Resisted', val: totals.resisted, color: totals.resisted > 0 ? 'text-emerald-400' : (isDark ? 'text-gray-600' : 'text-gray-400') },
+                                    { label: 'Guardrails', val: totals.policies, color: totals.policies > 0 ? 'text-f5-cyan' : (isDark ? 'text-gray-600' : 'text-gray-400') },
+                                ].map(s => (
+                                    <div key={s.label} className={`px-2 py-1.5 rounded-lg text-center ${isDark ? 'bg-white/[0.03]' : 'bg-white'}`}>
+                                        <div className={`text-base font-bold font-mono ${redteamActive ? s.color : (isDark ? 'text-gray-600' : 'text-gray-400')}`}>{redteamActive ? s.val : '?'}</div>
+                                        <div className={`text-[8px] ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>{s.label}</div>
+                                    </div>
+                                ))}
+                            </div>
+                            <div className={`flex-1 overflow-auto rounded-lg p-2 space-y-1 ${isDark ? 'bg-black/20' : 'bg-white'}`}>
+                                <div className={`text-[8px] uppercase font-bold tracking-wider ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>Findings</div>
+                                {findings.map((f, i) => (
+                                    <motion.div key={f.id} initial={i === 0 ? { opacity: 0, x: 6 } : {}} animate={{ opacity: 1, x: 0 }}
+                                        className={`px-2 py-1 rounded text-[9px] ${f.result === 'vuln' ? (isDark ? 'bg-red-500/10' : 'bg-red-50') : (isDark ? 'bg-emerald-500/10' : 'bg-emerald-50')}`}
+                                        style={{ opacity: i === 0 ? 1 : Math.max(0.4, 1 - i * 0.2) }}>
+                                        <div className="flex items-center gap-1">
+                                            <span className="font-bold" style={{ color: f.agentColor }}>{f.agent}</span>
+                                            <span className={f.result === 'vuln' ? 'text-red-400' : 'text-emerald-400'}>{f.result === 'vuln' ? '✕' : '✓'}</span>
+                                            <span className="font-bold px-1 rounded-sm text-[7px]" style={{ backgroundColor: f.sevColor + '18', color: f.sevColor }}>{f.severity}</span>
+                                            <span className={`ml-auto ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>{f.target}</span>
+                                        </div>
+                                        {i === 0 && <div className={`mt-0.5 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{f.detail}</div>}
+                                        {i === 0 && f.result === 'vuln' && remediateActive && f.guardrail && (
+                                            <div className="mt-0.5 text-f5-cyan font-medium"><i className="ph ph-first-aid mr-0.5 text-[8px]"></i>{f.guardrail}</div>
+                                        )}
+                                    </motion.div>
+                                ))}
+                                {findings.length === 0 && <div className={`text-[9px] ${isDark ? 'text-gray-600' : 'text-gray-400'}`}>{redteamActive ? 'Launching agents...' : 'Enable Red Team'}</div>}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Status */}
+                    <div className={`pt-3 border-t text-xs font-medium flex-shrink-0 ${isDark ? 'border-white/5' : 'border-gray-200'} ${redteamActive ? 'text-f5-green' : (isDark ? 'text-gray-500' : 'text-gray-500')}`}>
+                        {redteamActive
+                            ? `AI Red Team · 5 agents active · ${totals.tests} tests${remediateActive ? ' · Remediate generating guardrails' : ''}`
+                            : 'No adversarial testing · Attack surface unknown'}
+                    </div>
+                </div>
+            );
+        };
+
+        const SimRedTeamChatBackup = ({ active, toggles = {} }) => {
             const { isDark } = useTheme();
             const redteamActive = toggles.redteam ?? active;
             const remediateActive = toggles.remediate || false;
