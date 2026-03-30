@@ -425,6 +425,7 @@
             { label: 'Vectors - all about', tab: 3, keywords: 'concepts vector embedding similarity search database rag pinecone' },
             { label: 'Agents - all about', tab: 3, keywords: 'concepts agent multi-agent workflow loop tools orchestrator' },
             { label: 'Inference - all about', tab: 3, keywords: 'concepts inference prefill decode latency cost routing batching quantization caching speculative' },
+            { label: 'MCP - all about', tab: 3, keywords: 'concepts mcp model context protocol tools resources prompts server client host json-rpc usb-c' },
             // Products
             { label: 'F5 Products', tab: 4, keywords: 'products bnk guardrails red team ssl nginx bigip distributed cloud' },
         ];
@@ -5694,65 +5695,69 @@
                             </div>
                         </div>
 
-                        <div className={`flex-1 rounded-xl p-6 flex flex-col ${isDark ? 'bg-white/5 border border-white/10' : 'bg-white border border-gray-200'}`}>
-                            <div className="flex justify-end mb-4">
-                                <div className={`max-w-sm px-4 py-3 rounded-2xl rounded-tr-md text-sm ${isDark ? 'bg-f5-red/20 text-gray-200' : 'bg-f5-red/10 text-gray-700'}`}>
-                                    {presets[preset].attachment && (
-                                        <div className={`flex items-center gap-2 mb-2 px-3 py-2 rounded-lg ${isDark ? 'bg-black/30' : 'bg-white/60'}`}>
-                                            <i className={`ph ${presets[preset].attachment.icon} text-f5-red`}></i>
-                                            <div className="flex-1 min-w-0">
-                                                <div className={`text-xs font-mono truncate ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>{presets[preset].attachment.name}</div>
-                                                <div className={`text-[10px] ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>{presets[preset].attachment.size}</div>
-                                            </div>
-                                        </div>
-                                    )}
-                                    {presets[preset].prompt}
-                                </div>
-                            </div>
-
-                            {phase !== 'idle' && (
-                                <div className="flex gap-3 mb-4">
-                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${isDark ? 'bg-f5-cyan/20' : 'bg-blue-100'}`}>
-                                        <i className="ph ph-robot text-f5-cyan text-sm"></i>
-                                    </div>
-                                    <div className="flex-1">
-                                        <div className={`inline-block px-4 py-3 rounded-2xl rounded-tl-md text-sm leading-relaxed min-h-[48px] max-w-lg ${isDark ? 'bg-white/5 text-gray-300' : 'bg-gray-50 text-gray-700'}`}
-                                            style={{ borderLeft: `3px solid ${borderColor}` }}>
-                                            {phase === 'waiting' && (
-                                                <span className="inline-flex gap-1.5 items-center h-5">
-                                                    <span className="w-2 h-2 rounded-full bg-current animate-bounce" style={{ animationDelay: '0ms' }}></span>
-                                                    <span className="w-2 h-2 rounded-full bg-current animate-bounce" style={{ animationDelay: '150ms' }}></span>
-                                                    <span className="w-2 h-2 rounded-full bg-current animate-bounce" style={{ animationDelay: '300ms' }}></span>
-                                                </span>
-                                            )}
-                                            {(phase === 'streaming' || phase === 'done') && streamedText}
-                                            {phase === 'streaming' && <span className="inline-block w-0.5 h-4 bg-current ml-0.5 animate-pulse align-middle"></span>}
-                                        </div>
-
-                                        {phase === 'waiting' && (
-                                            <div className="mt-2 flex items-center gap-3">
-                                                <span className={`text-3xl font-mono font-bold ${timerColorCls}`}>{timerSec}s</span>
-                                                <span className={`text-sm ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>waiting for first token...</span>
-                                                {timer > 3000 && preset === 'massive' && (
-                                                    <span className="text-xs font-bold text-red-500 bg-red-500/10 px-2 py-1 rounded animate-pulse">Users abandon here</span>
-                                                )}
+                        <div className={`rounded-xl flex flex-col overflow-hidden ${isDark ? 'bg-white/5 border border-white/10' : 'bg-white border border-gray-200'}`} style={{ height: '420px' }}>
+                            {/* Scrollable chat area */}
+                            <div className="flex-1 min-h-0 overflow-auto p-6 pb-2">
+                                <div className="flex justify-end mb-4">
+                                    <div className={`max-w-sm px-4 py-3 rounded-2xl rounded-tr-md text-sm ${isDark ? 'bg-f5-red/20 text-gray-200' : 'bg-f5-red/10 text-gray-700'}`}>
+                                        {presets[preset].attachment && (
+                                            <div className={`flex items-center gap-2 mb-2 px-3 py-2 rounded-lg ${isDark ? 'bg-black/30' : 'bg-white/60'}`}>
+                                                <i className={`ph ${presets[preset].attachment.icon} text-f5-red`}></i>
+                                                <div className="flex-1 min-w-0">
+                                                    <div className={`text-xs font-mono truncate ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>{presets[preset].attachment.name}</div>
+                                                    <div className={`text-[10px] ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>{presets[preset].attachment.size}</div>
+                                                </div>
                                             </div>
                                         )}
+                                        {presets[preset].prompt}
                                     </div>
                                 </div>
-                            )}
 
-                            {phase === 'done' && (
-                                <div className={`p-4 rounded-lg text-sm ${isDark ? 'bg-white/5' : 'bg-gray-50'}`}>
-                                    <span className="font-medium">Simulated TTFT: </span>
-                                    <span className={`font-mono font-bold ${timerColorCls}`}>{waitSec}s</span>
-                                    <span className={`text-xs ml-3 ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>
-                                        Real TTFT would be ~{realTTFT > 1000 ? `${(realTTFT / 1000).toFixed(1)}s` : `${Math.round(realTTFT)}ms`} on {modelSize}B model
-                                    </span>
-                                </div>
-                            )}
+                                {phase !== 'idle' && (
+                                    <div className="flex gap-3 mb-4">
+                                        <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${isDark ? 'bg-f5-cyan/20' : 'bg-blue-100'}`}>
+                                            <i className="ph ph-robot text-f5-cyan text-sm"></i>
+                                        </div>
+                                        <div className="flex-1">
+                                            <div className={`inline-block px-4 py-3 rounded-2xl rounded-tl-md text-sm leading-relaxed min-h-[48px] max-w-lg ${isDark ? 'bg-white/5 text-gray-300' : 'bg-gray-50 text-gray-700'}`}
+                                                style={{ borderLeft: `3px solid ${borderColor}` }}>
+                                                {phase === 'waiting' && (
+                                                    <span className="inline-flex gap-1.5 items-center h-5">
+                                                        <span className="w-2 h-2 rounded-full bg-current animate-bounce" style={{ animationDelay: '0ms' }}></span>
+                                                        <span className="w-2 h-2 rounded-full bg-current animate-bounce" style={{ animationDelay: '150ms' }}></span>
+                                                        <span className="w-2 h-2 rounded-full bg-current animate-bounce" style={{ animationDelay: '300ms' }}></span>
+                                                    </span>
+                                                )}
+                                                {(phase === 'streaming' || phase === 'done') && streamedText}
+                                                {phase === 'streaming' && <span className="inline-block w-0.5 h-4 bg-current ml-0.5 animate-pulse align-middle"></span>}
+                                            </div>
 
-                            <div className="mt-auto pt-4">
+                                            {phase === 'waiting' && (
+                                                <div className="mt-2 flex items-center gap-3">
+                                                    <span className={`text-3xl font-mono font-bold ${timerColorCls}`}>{timerSec}s</span>
+                                                    <span className={`text-sm ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>waiting for first token...</span>
+                                                    {timer > 3000 && preset === 'massive' && (
+                                                        <span className="text-xs font-bold text-red-500 bg-red-500/10 px-2 py-1 rounded animate-pulse">Users abandon here</span>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {phase === 'done' && (
+                                    <div className={`p-4 rounded-lg text-sm ${isDark ? 'bg-white/5' : 'bg-gray-50'}`}>
+                                        <span className="font-medium">Simulated TTFT: </span>
+                                        <span className={`font-mono font-bold ${timerColorCls}`}>{waitSec}s</span>
+                                        <span className={`text-xs ml-3 ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>
+                                            Real TTFT would be ~{realTTFT > 1000 ? `${(realTTFT / 1000).toFixed(1)}s` : `${Math.round(realTTFT)}ms`} on {modelSize}B model
+                                        </span>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Pinned Send button */}
+                            <div className={`flex-shrink-0 px-6 pb-4 pt-2 ${isDark ? 'border-t border-white/5' : 'border-t border-gray-100'}`}>
                                 <button onClick={handleSend}
                                     disabled={phase === 'waiting' || phase === 'streaming'}
                                     className={`w-full py-3 rounded-xl text-sm font-bold transition-colors ${
@@ -5793,17 +5798,21 @@
                             <div className="text-xs uppercase font-bold tracking-wider text-gray-500 mb-3">Inference Timeline</div>
                             <div className={`h-16 rounded-xl overflow-hidden flex ${isDark ? 'bg-black/30' : 'bg-gray-100'}`}>
                                 <motion.div animate={{ width: `${prefillPct}%` }} transition={{ type: 'spring', stiffness: 100, damping: 20 }}
-                                    className="h-full flex items-center justify-center bg-gradient-to-r from-red-500/30 to-orange-500/30 relative">
+                                    className={`h-full flex items-center justify-center relative ${kvCacheHit ? (isDark ? 'bg-gradient-to-r from-cyan-500/20 to-blue-500/20' : 'bg-gradient-to-r from-cyan-500/15 to-blue-500/15') : 'bg-gradient-to-r from-red-500/30 to-orange-500/30'}`}>
                                     <div className="text-center">
-                                        <div className="text-sm font-bold text-f5-red">PREFILL</div>
-                                        <div className="text-xs font-mono text-f5-red/70">Processing {promptLen.toLocaleString()} tokens</div>
+                                        <div className={`text-sm font-bold ${kvCacheHit ? 'text-f5-cyan' : 'text-f5-red'}`}>PREFILL{kvCacheHit ? ' (cached)' : ''}</div>
+                                        <div className={`text-xs font-mono ${kvCacheHit ? 'text-f5-cyan/70' : 'text-f5-red/70'}`}>
+                                            {kvCacheHit
+                                                ? `${Math.round(promptLen * 0.75).toLocaleString()} of ${promptLen.toLocaleString()} tokens cached · ${Math.round(promptLen * 0.25).toLocaleString()} to process`
+                                                : `Processing all ${promptLen.toLocaleString()} tokens · ${modelSize}B model`}
+                                        </div>
                                     </div>
-                                    <div className="absolute right-0 top-0 bottom-0 w-1 bg-f5-orange"></div>
+                                    <div className={`absolute right-0 top-0 bottom-0 w-1 ${kvCacheHit ? 'bg-f5-cyan' : 'bg-f5-orange'}`}></div>
                                 </motion.div>
                                 <div className="flex-1 h-full flex items-center justify-center bg-green-500/10">
                                     <div className="text-center">
                                         <div className="text-sm font-bold text-green-500">DECODE</div>
-                                        <div className="text-xs font-mono text-green-500/70">~30ms per token</div>
+                                        <div className="text-xs font-mono text-green-500/70">~{(30 * modelSize / 7).toFixed(0)}ms per token</div>
                                     </div>
                                 </div>
                             </div>
@@ -6133,7 +6142,7 @@
                         </AnimatePresence>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-4 flex-shrink-0">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-10 flex-shrink-0">
                         <div className={`p-4 rounded-xl ${isDark ? 'bg-white/5 border border-white/10' : 'bg-gray-50 border border-gray-200'}`}>
                             <div className="text-sm font-bold mb-2">The Restaurant Analogy</div>
                             <div className="flex items-center gap-2 mb-2 text-lg">
@@ -8808,22 +8817,24 @@
                                 {stages.map((s, i) => {
                                     const isActive = i === phase;
                                     const isPast = i < phase;
-                                    const canClick = done || i <= phase;
+                                    const canClick = phase >= 0;
+                                    const isFaded = playing && !isActive && !isPast;
                                     return (
                                         <React.Fragment key={s.label}>
                                             {i > 0 && <div className="flex justify-center"><i className={`ph ph-arrow-down text-xs ${isActive ? '' : 'text-gray-500'}`} style={isActive ? { color: s.color } : {}}></i></div>}
                                             <motion.div
-                                                animate={{ opacity: phase >= 0 && !isActive && !isPast && !done ? 0.25 : 1, scale: isActive ? 1.02 : 1 }}
-                                                onClick={() => { if (canClick) setPhase(phase === i ? -2 : i); }}
+                                                animate={{ opacity: isFaded ? 0.25 : 1, scale: isActive ? 1.02 : 1 }}
+                                                onClick={() => { if (canClick) { setPlaying(false); setPhase(phase === i ? -2 : i); } }}
                                                 className={`px-4 py-3 rounded-xl text-xs border-2 transition-all ${canClick ? 'cursor-pointer' : ''} ${
                                                     isActive ? (isDark ? 'bg-black/40' : 'bg-white shadow-lg') : (isDark ? 'bg-white/[0.02] border-transparent' : 'bg-gray-50 border-transparent')
                                                 }`}
                                                 style={{ borderColor: isActive ? s.color : 'transparent' }}>
                                                 <div className="flex items-center gap-2">
                                                     <i className={`ph ${s.icon} text-base`} style={{ color: s.color }}></i>
-                                                    <span className="font-bold" style={isActive || isPast || done ? { color: s.color } : {}}>{s.label}</span>
+                                                    <span className="font-bold" style={isActive || canClick ? { color: s.color } : {}}>{s.label}</span>
                                                     <span className={`ml-auto text-[9px] font-mono ${isDark ? 'text-gray-600' : 'text-gray-500'}`}>{s.time}</span>
                                                     {isPast && !isActive && <i className="ph ph-check-circle text-emerald-400 text-xs"></i>}
+                                                    {canClick && !isActive && !isPast && <i className={`ph ph-caret-down text-xs ${isDark ? 'text-gray-600' : 'text-gray-400'}`}></i>}
                                                 </div>
                                                 <AnimatePresence>
                                                     {isActive && (
@@ -9132,6 +9143,421 @@
             );
         };
 
+        // ============================================================
+        // MCP — ALL ABOUT (Interactive MCP Explainer — Advanced)
+        // ============================================================
+        const MCPExplainer = () => {
+            const { isDark } = useTheme();
+            const [activeTab, setActiveTab] = useState('what');
+
+            // ── Tab 1: What is MCP? — Live comparison demo ──
+            const WhatTab = () => {
+                const [showAfter, setShowAfter] = useState(false);
+                const [lineStep, setLineStep] = useState(0);
+                const [playing, setPlaying] = useState(false);
+
+                const apps = ['Claude', 'ChatGPT', 'Cursor'];
+                const sources = ['Slack', 'GitHub', 'Postgres'];
+                const appColors = ['#e4002b', '#10b981', '#a855f7'];
+                const srcColors = ['#ff6a13', '#6b7280', '#00b4d8'];
+
+                // Animate connection lines one by one
+                useEffect(() => {
+                    if (!playing) return;
+                    const maxLines = showAfter ? 3 : 9;
+                    if (lineStep >= maxLines) { setPlaying(false); return; }
+                    const t = setTimeout(() => setLineStep(s => s + 1), showAfter ? 300 : 200);
+                    return () => clearTimeout(t);
+                }, [playing, lineStep, showAfter]);
+
+                const handleToggle = (after) => { setShowAfter(after); setLineStep(0); setPlaying(true); };
+
+                return (
+                    <div className="space-y-4">
+                        <div className={`p-4 rounded-xl ${isDark ? 'bg-white/5 border border-white/10' : 'bg-white border border-gray-200'}`}>
+                            <p className={`text-sm leading-relaxed ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                                <strong className={isDark ? 'text-white' : 'text-gray-900'}>MCP</strong> is the <strong className={isDark ? 'text-white' : 'text-gray-900'}>USB-C for AI</strong> — one open protocol connecting any AI app to any data source. Watch the difference:
+                            </p>
+                        </div>
+
+                        <div className="flex gap-2">
+                            <button onClick={() => handleToggle(false)} className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${!showAfter ? 'bg-red-500 text-white' : (isDark ? 'bg-white/5 text-gray-400' : 'bg-gray-100 text-gray-500')}`}><i className="ph ph-x-circle mr-1"></i>Before MCP</button>
+                            <button onClick={() => handleToggle(true)} className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${showAfter ? 'bg-emerald-500 text-white' : (isDark ? 'bg-white/5 text-gray-400' : 'bg-gray-100 text-gray-500')}`}><i className="ph ph-check-circle mr-1"></i>With MCP</button>
+                        </div>
+
+                        <div className={`p-5 rounded-xl relative ${isDark ? 'bg-white/[0.02] border border-white/5' : 'bg-gray-50 border border-gray-200'}`} style={{ minHeight: '220px' }}>
+                            <AnimatePresence mode="wait">
+                                {!showAfter ? (
+                                    <motion.div key="before" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                                        <div className={`text-[9px] uppercase font-bold tracking-wider mb-4 text-red-400`}>N x M Problem — {Math.min(lineStep, 9)} of 9 custom integrations</div>
+                                        <div className="flex justify-between">
+                                            <div className="space-y-3 w-[25%]">
+                                                {apps.map((a, i) => (
+                                                    <div key={a} className={`px-3 py-2 rounded-lg text-xs font-bold text-center border-2`} style={{ borderColor: appColors[i], color: appColors[i], backgroundColor: appColors[i] + '10' }}>{a}</div>
+                                                ))}
+                                            </div>
+                                            <div className="flex-1 flex flex-col justify-center items-center gap-1 px-2">
+                                                {apps.flatMap((a, ai) => sources.map((s, si) => ({ a, s, ai, si, idx: ai * 3 + si }))).map(conn => (
+                                                    <motion.div key={conn.idx}
+                                                        initial={{ scaleX: 0, opacity: 0 }}
+                                                        animate={{ scaleX: conn.idx < lineStep ? 1 : 0, opacity: conn.idx < lineStep ? 1 : 0 }}
+                                                        transition={{ duration: 0.2 }}
+                                                        className="flex items-center gap-1 w-full" style={{ height: '14px' }}>
+                                                        <div className="h-px flex-1 rounded" style={{ backgroundColor: appColors[conn.ai] + '60' }}></div>
+                                                        <span className={`text-[8px] font-mono ${isDark ? 'text-gray-600' : 'text-gray-400'}`}>custom</span>
+                                                        <div className="h-px flex-1 rounded" style={{ backgroundColor: srcColors[conn.si] + '60' }}></div>
+                                                    </motion.div>
+                                                ))}
+                                            </div>
+                                            <div className="space-y-3 w-[25%]">
+                                                {sources.map((s, i) => (
+                                                    <div key={s} className={`px-3 py-2 rounded-lg text-xs font-bold text-center border-2`} style={{ borderColor: srcColors[i], color: srcColors[i], backgroundColor: srcColors[i] + '10' }}>{s}</div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </motion.div>
+                                ) : (
+                                    <motion.div key="after" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                                        <div className="text-[9px] uppercase font-bold tracking-wider mb-4 text-emerald-400">With MCP — {Math.min(lineStep, 3)} of 3 connections (replaces 9)</div>
+                                        <div className="flex items-center justify-between">
+                                            <div className="space-y-3 w-[25%]">
+                                                {apps.map((a, i) => (
+                                                    <motion.div key={a} initial={{ x: -10, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: i * 0.1 }}
+                                                        className={`px-3 py-2 rounded-lg text-xs font-bold text-center border-2`} style={{ borderColor: appColors[i], color: appColors[i], backgroundColor: appColors[i] + '10' }}>{a}</motion.div>
+                                                ))}
+                                            </div>
+                                            <div className="flex flex-col items-center gap-1 px-2">
+                                                {[0,1,2].map(i => (
+                                                    <motion.div key={i} initial={{ scaleX: 0 }} animate={{ scaleX: i < lineStep ? 1 : 0 }} transition={{ duration: 0.3 }}
+                                                        className="h-px w-12 rounded" style={{ backgroundColor: '#10b981' }}></motion.div>
+                                                ))}
+                                            </div>
+                                            <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.2, type: 'spring' }}
+                                                className={`px-5 py-6 rounded-xl text-center border-2 border-f5-red/50 flex-shrink-0 ${isDark ? 'bg-f5-red/10' : 'bg-red-50'}`}>
+                                                <i className="ph ph-plugs-connected text-2xl text-f5-red mb-1"></i>
+                                                <div className="text-sm font-bold text-f5-red">MCP</div>
+                                                <div className={`text-[9px] ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>One protocol</div>
+                                            </motion.div>
+                                            <div className="flex flex-col items-center gap-1 px-2">
+                                                {[0,1,2].map(i => (
+                                                    <motion.div key={i} initial={{ scaleX: 0 }} animate={{ scaleX: i < lineStep ? 1 : 0 }} transition={{ delay: 0.1, duration: 0.3 }}
+                                                        className="h-px w-12 rounded" style={{ backgroundColor: '#10b981' }}></motion.div>
+                                                ))}
+                                            </div>
+                                            <div className="space-y-3 w-[25%]">
+                                                {sources.map((s, i) => (
+                                                    <motion.div key={s} initial={{ x: 10, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.3 + i * 0.1 }}
+                                                        className={`px-3 py-2 rounded-lg text-xs font-bold text-center border-2`} style={{ borderColor: srcColors[i], color: srcColors[i], backgroundColor: srcColors[i] + '10' }}>{s}</motion.div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                        </div>
+
+                        <div className={`grid grid-cols-2 gap-3`}>
+                            <div className={`p-3 rounded-xl border-l-4 border-red-500 ${isDark ? 'bg-red-500/5' : 'bg-red-50'}`}>
+                                <div className="text-xs font-bold text-red-400 mb-1">Without MCP</div>
+                                <p className={`text-[10px] ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>3 apps x 3 sources = 9 custom connectors. Each one is unique code to build, test, and maintain.</p>
+                            </div>
+                            <div className={`p-3 rounded-xl border-l-4 border-emerald-500 ${isDark ? 'bg-emerald-500/5' : 'bg-emerald-50'}`}>
+                                <div className="text-xs font-bold text-emerald-400 mb-1">With MCP</div>
+                                <p className={`text-[10px] ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>3 servers built once. Every MCP-compatible app connects instantly. Add a new app = 0 new integrations.</p>
+                            </div>
+                        </div>
+                    </div>
+                );
+            };
+
+            // ── Tab 2: Live Tool Call Demo — Horizontal Pipeline ──
+            const ArchTab = () => {
+                const [phase, setPhase] = useState(-1);
+                const [playing, setPlaying] = useState(false);
+                const [selectedTool, setSelectedTool] = useState(0);
+                const demos = [
+                    { query: 'What\'s the weather in SF?', tool: 'get_weather', args: 'location: "San Francisco"', result: '72F, partly cloudy, humidity 65%', server: 'Weather MCP', color: '#00b4d8' },
+                    { query: 'Find open PRs on my repo', tool: 'list_pull_requests', args: 'repo: "acme/platform", state: "open"', result: '3 open PRs: #142, #139, #137', server: 'GitHub MCP', color: '#6b7280' },
+                    { query: 'Send standup to team', tool: 'send_message', args: 'channel: "#engineering"', result: 'Message sent to #engineering', server: 'Slack MCP', color: '#e4002b' },
+                ];
+                const d = demos[selectedTool];
+                const stages = [
+                    { label: 'User', icon: 'ph-user' },
+                    { label: 'Host', icon: 'ph-robot' },
+                    { label: 'tools/list', icon: 'ph-list-magnifying-glass' },
+                    { label: 'LLM', icon: 'ph-brain' },
+                    { label: 'tools/call', icon: 'ph-lightning' },
+                    { label: 'Result', icon: 'ph-check-circle' },
+                ];
+                const stageDetails = [
+                    { title: 'User sends prompt', text: d.query },
+                    { title: 'Host routes to MCP Client', text: `Claude Desktop finds the ${d.server} client connection` },
+                    { title: 'Client discovers tools', text: `tools/list → ${d.server} responds with available tools including ${d.tool}` },
+                    { title: 'LLM selects tool', text: `Model decides: call ${d.tool} with ${d.args}` },
+                    { title: 'Server executes tool', text: `${d.server} runs ${d.tool} and returns data` },
+                    { title: 'Response delivered', text: d.result },
+                ];
+                const done = phase >= stages.length - 1;
+
+                useEffect(() => {
+                    if (!playing || done) { if (done) setPlaying(false); return; }
+                    const t = setTimeout(() => setPhase(s => s + 1), 1000);
+                    return () => clearTimeout(t);
+                }, [playing, phase, done]);
+
+                return (
+                    <div className="space-y-4">
+                        <div className={`p-4 rounded-xl ${isDark ? 'bg-white/5 border border-white/10' : 'bg-white border border-gray-200'}`}>
+                            <p className={`text-sm leading-relaxed ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                                Watch a <strong className={isDark ? 'text-white' : 'text-gray-900'}>live MCP tool call</strong> flow through the system. Pick a scenario and hit Play.
+                            </p>
+                        </div>
+
+                        <div className="flex items-center gap-2 flex-wrap">
+                            {demos.map((dm, i) => (
+                                <button key={i} onClick={() => { setSelectedTool(i); setPhase(-1); setPlaying(false); }}
+                                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${selectedTool === i ? 'text-white' : (isDark ? 'bg-white/5 text-gray-400' : 'bg-gray-100 text-gray-500')}`}
+                                    style={selectedTool === i ? { backgroundColor: dm.color } : {}}>{dm.server}</button>
+                            ))}
+                            <div className="ml-auto flex gap-2">
+                                {!playing && phase < 0 && <button onClick={() => { setPlaying(true); setPhase(0); }} className="px-4 py-1.5 rounded-full text-xs font-bold text-white bg-gradient-to-r from-f5-red to-f5-orange hover:scale-105 transition-transform"><i className="ph ph-play-fill mr-1"></i>Play</button>}
+                                {(playing || phase >= 0) && <button onClick={() => { setPlaying(false); setPhase(-1); }} className={`px-3 py-1.5 rounded-lg text-xs font-medium ${isDark ? 'bg-white/5 text-gray-400' : 'bg-gray-100 text-gray-500'}`}><i className="ph ph-arrow-counter-clockwise mr-1"></i>Reset</button>}
+                            </div>
+                        </div>
+
+                        {/* Horizontal pipeline stepper */}
+                        <div className={`p-4 rounded-xl ${isDark ? 'bg-white/5 border border-white/10' : 'bg-white border border-gray-200'}`}>
+                            <div className="flex items-center mb-4">
+                                {stages.map((s, i) => {
+                                    const isActive = i === phase;
+                                    const isPast = phase >= 0 && i < phase;
+                                    const isDone = phase >= 0 && i <= phase;
+                                    return (
+                                        <React.Fragment key={i}>
+                                            {i > 0 && <div className="flex-shrink-0 mx-0.5 transition-all duration-500" style={{ width: '16px', height: '2px', borderRadius: '1px', backgroundColor: isDone ? d.color : (isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)') }}></div>}
+                                            <button onClick={() => { if (phase >= 0) { setPlaying(false); setPhase(phase === i ? -2 : i); } }}
+                                                className={`flex-1 flex flex-col items-center gap-1.5 transition-all duration-500 ${phase >= 0 ? 'cursor-pointer' : ''}`}>
+                                                <motion.div animate={{ scale: isActive ? 1.2 : 1 }} transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+                                                    className="w-9 h-9 rounded-full flex items-center justify-center transition-all duration-500"
+                                                    style={{
+                                                        backgroundColor: isDone ? d.color + (isDark ? '25' : '18') : (isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.04)'),
+                                                        border: `2px solid ${isDone ? d.color : (isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)')}`,
+                                                        boxShadow: isActive ? `0 0 16px ${d.color}35` : 'none',
+                                                    }}>
+                                                    {isPast && !isActive ? <i className="ph ph-check-bold text-xs text-emerald-400"></i>
+                                                        : <i className={`ph ${s.icon} text-sm transition-colors duration-500`} style={{ color: isDone ? d.color : (isDark ? '#4b5563' : '#9ca3af') }}></i>}
+                                                </motion.div>
+                                                <span className="text-[9px] font-medium text-center leading-tight transition-colors duration-500" style={{ color: isDone ? d.color : (isDark ? '#4b5563' : '#9ca3af') }}>{s.label}</span>
+                                            </button>
+                                        </React.Fragment>
+                                    );
+                                })}
+                            </div>
+
+                            {/* Detail panel for active step */}
+                            <AnimatePresence mode="wait">
+                                {phase >= 0 && phase < stages.length && (
+                                    <motion.div key={phase}
+                                        initial={{ opacity: 0, y: 6 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0, y: -6 }}
+                                        transition={{ duration: 0.25 }}
+                                        className={`p-4 rounded-xl ${isDark ? 'bg-black/30' : 'bg-gray-50'}`}
+                                        style={{ borderLeft: `3px solid ${d.color}` }}>
+                                        <div className="text-xs font-bold mb-1" style={{ color: d.color }}>{stageDetails[phase].title}</div>
+                                        <div className={`font-mono text-[11px] ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>{stageDetails[phase].text}</div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                        </div>
+                    </div>
+                );
+            };
+
+            // ── Tab 3: Interactive Primitives ──
+            const PrimitivesTab = () => {
+                const [selected, setSelected] = useState(0);
+                const [callPhase, setCallPhase] = useState(-1);
+                const primitives = [
+                    { name: 'Tools', icon: 'ph-wrench', color: '#e4002b', who: 'Model-controlled', desc: 'Executable functions the AI can invoke — search, query, send, code.', call: 'tools/call', method: 'get_weather', args: '{ "location": "San Francisco" }', result: '"72F, partly cloudy, humidity 65%"', realWorld: ['Search APIs', 'Database queries', 'File operations', 'Send messages', 'Run code'] },
+                    { name: 'Resources', icon: 'ph-database', color: '#00b4d8', who: 'App-controlled', desc: 'Data pulled into context — files, schemas, docs. The app decides what to include.', call: 'resources/read', method: 'file:///README.md', args: '{ "uri": "file:///project/README.md" }', result: '"# My Project\\nA web app built with React..."', realWorld: ['File contents', 'Database schemas', 'API docs', 'Config files', 'Logs'] },
+                    { name: 'Prompts', icon: 'ph-chat-circle-text', color: '#10b981', who: 'User-controlled', desc: 'Reusable templates — system prompts, few-shot examples, workflows.', call: 'prompts/get', method: 'code_review', args: '{ "name": "code_review" }', result: '"Review this code for security, performance..."', realWorld: ['System prompts', 'Few-shot examples', 'Analysis templates', 'Workflows'] },
+                ];
+                const p = primitives[selected];
+
+                useEffect(() => { setCallPhase(-1); }, [selected]);
+
+                const runCall = () => {
+                    setCallPhase(0);
+                    setTimeout(() => setCallPhase(1), 600);
+                    setTimeout(() => setCallPhase(2), 1200);
+                    setTimeout(() => setCallPhase(3), 1800);
+                };
+
+                return (
+                    <div className="space-y-4">
+                        <div className={`p-4 rounded-xl ${isDark ? 'bg-white/5 border border-white/10' : 'bg-white border border-gray-200'}`}>
+                            <p className={`text-sm leading-relaxed ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                                MCP servers expose <strong className={isDark ? 'text-white' : 'text-gray-900'}>three primitives</strong>. Click one, then hit "Execute" to see a live JSON-RPC call.
+                            </p>
+                        </div>
+
+                        <div className="grid grid-cols-3 gap-3">
+                            {primitives.map((pr, i) => (
+                                <button key={pr.name} onClick={() => setSelected(i)}
+                                    className={`p-3 rounded-xl text-center transition-all border-2 ${selected === i ? (isDark ? 'bg-black/30' : 'bg-white shadow-md') : (isDark ? 'bg-white/[0.02] border-transparent' : 'bg-gray-50 border-transparent')}`}
+                                    style={{ borderColor: selected === i ? pr.color : undefined }}>
+                                    <i className={`ph ${pr.icon} text-xl mb-1`} style={{ color: pr.color }}></i>
+                                    <div className="text-xs font-bold" style={{ color: selected === i ? pr.color : undefined }}>{pr.name}</div>
+                                    <div className={`text-[9px] ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>{pr.who}</div>
+                                </button>
+                            ))}
+                        </div>
+
+                        <div className={`p-4 rounded-xl ${isDark ? 'bg-white/5 border border-white/10' : 'bg-white border border-gray-200'}`}>
+                            <div className="flex items-center gap-2 mb-3">
+                                <i className={`ph ${p.icon} text-lg`} style={{ color: p.color }}></i>
+                                <span className="text-sm font-bold" style={{ color: p.color }}>{p.name}</span>
+                                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ml-1`} style={{ backgroundColor: p.color + '15', color: p.color }}>{p.who}</span>
+                                <button onClick={runCall} className={`ml-auto px-3 py-1.5 rounded-full text-[10px] font-bold text-white hover:scale-105 transition-transform`} style={{ background: `linear-gradient(135deg, ${p.color}, ${p.color}cc)` }}>
+                                    <i className="ph ph-play-fill mr-1"></i>Execute
+                                </button>
+                            </div>
+                            <p className={`text-xs mb-3 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{p.desc}</p>
+
+                            {/* Live JSON-RPC call animation */}
+                            <div className={`rounded-lg font-mono text-[10px] overflow-hidden ${isDark ? 'bg-black/40' : 'bg-gray-900'}`}>
+                                <div className="px-3 py-1.5 flex items-center gap-2" style={{ backgroundColor: p.color + '20' }}>
+                                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: p.color }}></div>
+                                    <span style={{ color: p.color }}>{p.call} → {p.method}</span>
+                                </div>
+                                <div className="p-3 space-y-2">
+                                    <motion.div animate={{ opacity: callPhase >= 0 ? 1 : 0.3 }} className="text-gray-500">
+                                        <span className="text-cyan-400">REQUEST</span> {p.call}
+                                    </motion.div>
+                                    <motion.div animate={{ opacity: callPhase >= 1 ? 1 : 0.15 }}>
+                                        <span className="text-amber-400">ARGS</span> <span className="text-gray-300">{p.args}</span>
+                                    </motion.div>
+                                    {callPhase >= 2 && (
+                                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center gap-2">
+                                            <span className="text-yellow-400">PROCESSING</span>
+                                            <motion.span animate={{ opacity: [0.3, 1, 0.3] }} transition={{ duration: 0.8, repeat: callPhase === 2 ? Infinity : 0 }} className="text-yellow-400">...</motion.span>
+                                        </motion.div>
+                                    )}
+                                    {callPhase >= 3 && (
+                                        <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}>
+                                            <span className="text-emerald-400">RESULT</span> <span className="text-gray-200">{p.result}</span>
+                                        </motion.div>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div className="flex flex-wrap gap-1.5 mt-3">
+                                {p.realWorld.map(rw => (
+                                    <span key={rw} className="text-[9px] font-medium px-2 py-0.5 rounded-full" style={{ backgroundColor: p.color + '12', color: p.color }}>{rw}</span>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                );
+            };
+
+            // ── Tab 4: Real World — Interactive server explorer ──
+            const RealWorldTab = () => {
+                const [activeSrv, setActiveSrv] = useState(null);
+                const servers = [
+                    { name: 'GitHub', desc: 'Repos, PRs, issues, code search', icon: 'ph-github-logo', color: '#6b7280', tools: ['search_repos', 'create_issue', 'read_file', 'list_prs'], example: '"List all open PRs with failing CI" → searches repos, filters by CI status, returns 3 PRs with links' },
+                    { name: 'Slack', desc: 'Messages, channels, users', icon: 'ph-chat-teardrop', color: '#e4002b', tools: ['send_message', 'list_channels', 'search_messages', 'get_user'], example: '"Send standup summary to #engineering" → formats summary, posts to channel, confirms delivery' },
+                    { name: 'Postgres', desc: 'Queries, schemas, tables', icon: 'ph-database', color: '#00b4d8', tools: ['query', 'list_tables', 'describe_table', 'explain_plan'], example: '"How many users signed up this week?" → generates SQL, executes safely, returns count + chart data' },
+                    { name: 'Filesystem', desc: 'Read, write, search files', icon: 'ph-folder-open', color: '#ff6a13', tools: ['read_file', 'write_file', 'search_files', 'list_dir'], example: '"Find all TODO comments in src/" → recursively searches, returns file:line for each match' },
+                    { name: 'Google Drive', desc: 'Docs, sheets, folders', icon: 'ph-google-drive-logo', color: '#10b981', tools: ['search_files', 'read_doc', 'list_folder', 'get_sheet'], example: '"Summarize the Q3 board deck" → finds latest deck, extracts text from slides, generates summary' },
+                    { name: 'Puppeteer', desc: 'Browse web, take screenshots', icon: 'ph-globe', color: '#a855f7', tools: ['navigate', 'screenshot', 'click', 'extract_text'], example: '"Screenshot the pricing page of competitor.com" → navigates, waits for load, captures full page' },
+                ];
+
+                return (
+                    <div className="space-y-4">
+                        <div className={`p-4 rounded-xl ${isDark ? 'bg-white/5 border border-white/10' : 'bg-white border border-gray-200'}`}>
+                            <p className={`text-sm leading-relaxed ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                                Click any server to see what it can do. Each is <strong className={isDark ? 'text-white' : 'text-gray-900'}>built once</strong> and works with every MCP client.
+                            </p>
+                        </div>
+
+                        <div className="grid grid-cols-3 gap-3">
+                            {servers.map((s, i) => {
+                                const isActive = activeSrv === i;
+                                return (
+                                    <button key={s.name} onClick={() => setActiveSrv(isActive ? null : i)}
+                                        className={`p-3 rounded-xl text-left transition-all border-2 ${isActive ? (isDark ? 'bg-black/30 shadow-lg' : 'bg-white shadow-lg') : (isDark ? 'bg-white/[0.02] border-transparent hover:border-white/10' : 'bg-gray-50 border-transparent hover:border-gray-200')}`}
+                                        style={{ borderColor: isActive ? s.color : undefined }}>
+                                        <div className="flex items-center gap-2 mb-1.5">
+                                            <i className={`ph ${s.icon} text-lg`} style={{ color: s.color }}></i>
+                                            <span className="text-xs font-bold" style={{ color: isActive ? s.color : undefined }}>{s.name}</span>
+                                        </div>
+                                        <div className={`text-[10px] mb-2 ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>{s.desc}</div>
+                                        <div className="flex flex-wrap gap-1">
+                                            {s.tools.map(t => (
+                                                <span key={t} className={`text-[8px] font-mono px-1.5 py-0.5 rounded ${isDark ? 'bg-white/5 text-gray-400' : 'bg-gray-100 text-gray-600'}`}>{t}</span>
+                                            ))}
+                                        </div>
+                                    </button>
+                                );
+                            })}
+                        </div>
+
+                        <AnimatePresence>
+                            {activeSrv !== null && (
+                                <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
+                                    className={`p-4 rounded-xl border-l-4 ${isDark ? 'bg-white/[0.02] border border-white/5' : 'bg-gray-50 border border-gray-200'}`}
+                                    style={{ borderLeftColor: servers[activeSrv].color }}>
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <i className={`ph ${servers[activeSrv].icon}`} style={{ color: servers[activeSrv].color }}></i>
+                                        <span className="text-xs font-bold" style={{ color: servers[activeSrv].color }}>Example: {servers[activeSrv].name} MCP Server</span>
+                                    </div>
+                                    <p className={`text-xs leading-relaxed ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>{servers[activeSrv].example}</p>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </div>
+                );
+            };
+
+            const tabs = [
+                { id: 'what', label: 'What is MCP?', icon: 'ph-plugs-connected', help: 'MCP is the USB-C for AI — one open protocol connecting any AI app to any data source.' },
+                { id: 'arch', label: 'How it Works', icon: 'ph-flow-arrow', help: 'Host → Client → Server architecture with JSON-RPC 2.0 communication.' },
+                { id: 'primitives', label: 'The 3 Primitives', icon: 'ph-stack', help: 'Tools (model-controlled), Resources (app-controlled), Prompts (user-controlled).' },
+                { id: 'real', label: 'Real World', icon: 'ph-globe', help: 'Pre-built MCP servers for GitHub, Slack, Postgres, filesystem, and more.' },
+            ];
+
+            return (
+                <div className="flex flex-col h-full">
+                    <div className={`flex gap-1 p-1 rounded-xl mb-4 flex-shrink-0 ${isDark ? 'bg-white/5' : 'bg-gray-100'}`}>
+                        {tabs.map(t => (
+                            <button key={t.id} onClick={() => setActiveTab(t.id)}
+                                className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                                    activeTab === t.id
+                                        ? (isDark ? 'bg-white/10 text-white' : 'bg-white text-gray-900 shadow-sm')
+                                        : (isDark ? 'text-gray-500 hover:text-gray-300' : 'text-gray-500 hover:text-gray-700')
+                                }`}>
+                                <i className={`ph ${t.icon} text-sm`}></i>
+                                {t.label}
+                                {t.help && <HelpTooltip text={t.help} />}
+                            </button>
+                        ))}
+                    </div>
+                    <div className="flex-1 min-h-0 overflow-auto pb-8">
+                        <AnimatePresence mode="wait">
+                            <motion.div key={activeTab} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
+                                {activeTab === 'what' && <WhatTab />}
+                                {activeTab === 'arch' && <ArchTab />}
+                                {activeTab === 'primitives' && <PrimitivesTab />}
+                                {activeTab === 'real' && <RealWorldTab />}
+                            </motion.div>
+                        </AnimatePresence>
+                    </div>
+                </div>
+            );
+        };
+
         // Playground Concept Wrapper
         const PlaygroundConcept = ({ id, title, description, children }) => {
             const { isDark } = useTheme();
@@ -9149,16 +9575,17 @@
         };
 
         const PLAYGROUND_SIDEBAR = [
-            { id: 'pg-llm-think', label: 'How LLMs Think' },
-            { id: 'pg-token-economy', label: 'Token Economy' },
+            { id: 'pg-llm-think', label: 'How LLMs Work' },
+            { id: 'pg-mha-ffn', label: 'Transformer Layers' },
+            { id: 'pg-attention', label: 'Attention & Cache' },
+            { id: 'pg-context', label: 'Context Windows' },
+            { id: 'pg-token-economy', label: 'Token Economics' },
+            { id: 'pg-inference', label: 'Inference Pipeline' },
+            { id: 'pg-hol-ttft', label: 'First Token Latency' },
+            { id: 'pg-vectors', label: 'Vectors & RAG' },
+            { id: 'pg-mcp', label: 'MCP Protocol' },
+            { id: 'pg-agents', label: 'AI Agents' },
             { id: 'pg-token-gov', label: 'Token Governance' },
-            { id: 'pg-hol-ttft', label: 'The First Token Problem' },
-            { id: 'pg-attention', label: 'Attention & KV Cache' },
-            { id: 'pg-mha-ffn', label: 'MHA + FFN' },
-            { id: 'pg-context', label: 'Context - all about' },
-            { id: 'pg-vectors', label: 'Vectors - all about' },
-            { id: 'pg-agents', label: 'Agents - all about' },
-            { id: 'pg-inference', label: 'Inference - all about' },
         ];
 
         const PlaygroundTab = () => {
@@ -9213,6 +9640,11 @@
                     <PlaygroundConcept id="pg-inference" title="Inference - all about"
                         description="Inference is the process of generating a response. Learn what happens between pressing Send and seeing the reply — and the techniques that make it fast and affordable.">
                         <InferenceExplainer />
+                    </PlaygroundConcept>
+
+                    <PlaygroundConcept id="pg-mcp" title="MCP - all about"
+                        description="The Model Context Protocol is the USB-C for AI — one open standard connecting any AI app to any data source, tool, or workflow. Learn how it works and why it matters.">
+                        <MCPExplainer />
                     </PlaygroundConcept>
                 </TabLayout>
             );
