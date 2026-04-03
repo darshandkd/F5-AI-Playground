@@ -18,13 +18,21 @@ Simulate real F5 product scenarios with live, animated demos:
 - **DLP, Compliance, API Protection** — 18+ interactive simulations across Inference, Safety, and Data Delivery
 
 ### For Anyone Learning AI
-Explore 11 animated concept explainers — no prior knowledge required:
+Explore 13 animated concept explainers — no prior knowledge required:
 - **How LLMs Think** — Type a prompt, watch it flow through tokenization → embeddings → 3D vector space → attention → prediction
+- **Prompt Engineering** — Anatomy of prompts, zero-shot vs few-shot, chain-of-thought reasoning, temperature sampling, personas, and a cheatsheet of proven patterns
+- **Hallucinations & Grounding** — Why LLMs confabulate, error taxonomy, RAG pipeline visualization, grounding techniques (tool use, citations, self-consistency), and the trust spectrum from raw API to production-safe
 - **Context** — See what happens when a context window fills up and overflows
 - **Vectors & RAG** — Understand similarity search, vector databases, and retrieval-augmented generation
 - **Agents** — Watch chatbot vs agent side-by-side, explore workflow patterns and multi-agent orchestration
 - **Inference** — Interactive cost calculator, speed optimization techniques, smart model routing
 - **Attention, KV Cache, Transformers** — Visual breakdowns of the architecture powering every LLM
+
+### AI Security Lab
+Explore how LLM attacks work — and how to defend against them:
+- **LLM Abliteration** — 6-step interactive lab: scatter plot separation, neural probing, refusal vector extraction, 3D matrix projection, typewriter output comparison
+- **Model Distillation** — 6-step extraction attack: seed query generation, API interrogation, data curation, student initialization, behavior cloning, clone evaluation
+- **AI Guardrails** — 6-step defense-in-depth: input filtering with semantic routing, system prompt wrapping, latent activation clamping, output scanning with egress filter, multi-vector stress testing, secured output comparison
 
 ---
 
@@ -44,7 +52,7 @@ No npm, no build, no dependencies to install. Everything loads from CDN. Works i
 
 | | |
 |---|---|
-| **Single file** | `index.html` (~11,500 lines) — entire app in one file |
+| **Single file** | `index.html` (~14,000 lines) — entire app in one file |
 | **Framework** | React 18 (CDN) with Babel in-browser JSX compilation |
 | **Styling** | Tailwind CSS (CDN) with custom dark/light theme system |
 | **Animations** | Framer Motion for transitions, Three.js for 3D visualizations |
@@ -53,11 +61,12 @@ No npm, no build, no dependencies to install. Everything loads from CDN. Works i
 
 ### App Structure
 ```
-Landing Page (5 tiles)
+Landing Page (6 tiles)
  ├── Inference (8 use-cases with product toggles)
  ├── Safety & Security (5 use-cases)
  ├── Data Delivery (5 use-cases)
- ├── AI Concepts (11 interactive explainers)
+ ├── AI Concepts (13 interactive explainers)
+ ├── AI Security (3 attack/defense labs)
  └── F5 Products (9 product cards)
 ```
 
@@ -96,13 +105,25 @@ Landing Page (5 tiles)
 | Concept | What You'll Learn |
 |---------|-------------------|
 | How LLMs Think | Tokenization, embeddings, vector space, self-attention, next-token prediction |
-| Token Economy | Token counting, API pricing, cost projection, RAG savings |
-| Token Governance | Rate limiting, budgets, access tiers, policy simulation |
-| The First Token Problem | TTFT latency, prefill vs decode, batching, mitigations |
+| Transformer Layers | Multi-head attention, feed-forward networks, layer flow, model scaling |
 | Attention & KV Cache | Causal mask, QKV mechanics, KV cache compression (TurboQuant) |
-| MHA + FFN | Transformer layer flow, attention vs FFN comparison, model scaling |
-| Context | Context windows, overflow behavior, compaction, note-taking, sub-agents |
-| Vectors | Embeddings, similarity search, vector databases, RAG pipeline |
-| Agents | Agent loop, workflow patterns, multi-agent orchestration |
+| Context Windows | Overflow behavior, compaction strategies, note-taking, sub-agents |
+| Token Economics | Token counting, API pricing, cost projection, RAG savings |
+| Inference Pipeline | Prefill/decode phases, cost calculation, speed tricks, smart routing |
+| First Token Latency | TTFT latency, prefill vs decode, batching, mitigations |
+| Vectors & RAG | Embeddings, similarity search, vector databases, RAG pipeline |
 | MCP Protocol | USB-C analogy, horizontal pipeline, terminal demo, real-world servers |
-| Inference | Prefill/decode phases, cost calculation, speed tricks, smart routing |
+| AI Agents | Agent loop, workflow patterns, multi-agent orchestration |
+| Token Governance | Rate limiting, budgets, access tiers, policy simulation |
+| Prompt Engineering | Prompt anatomy, zero/few-shot, chain-of-thought, temperature, personas |
+| Hallucinations & Grounding | Why LLMs hallucinate, error types, RAG, tool use, citations, trust spectrum |
+
+---
+
+## AI Security Labs
+
+| Lab | Steps | Key Animations |
+|-----|-------|----------------|
+| LLM Abliteration | 6 steps | Spring-physics scatter plots, neural network probing, 3D perspective matrix transforms, typewriter output comparison |
+| Model Distillation | 6 steps | Seed query expansion, API interrogation flow, funnel curation, weight grid convergence, loss curve animation |
+| AI Guardrails | 6 steps | Packet traffic through semantic router, system prompt wrapping, activation clamping graph, egress scanner beam, concentric rotating defense rings with attack vector beams |

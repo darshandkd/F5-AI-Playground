@@ -1762,10 +1762,10 @@
                     </div>
 
                     {/* Log entries */}
-                    <div className="flex flex-col gap-0.5 overflow-hidden flex-shrink-0" style={{ height: '240px' }}>
+                    <div className="flex flex-col gap-0.5 overflow-hidden flex-shrink-0" style={{ height: '340px' }}>
                         {log.map((entry, i) => {
                             const tierColor = anyActive ? (tierDefs[entry.consumer]?.color || '#6b7280') : '#6b7280';
-                            const opacity = i === 0 ? 1 : Math.max(0.3, 1 - i * 0.15);
+                            const opacity = i < 5 ? 1 : Math.max(0.4, 1 - (i - 4) * 0.3);
                             const row = (
                                 <div className="py-1.5 px-2 rounded-lg" style={{
                                     borderLeft: entry.blocked ? '3px solid #ef4444'
@@ -2239,7 +2239,7 @@
                         </div>
                         <div className="flex items-center gap-2 mt-2 flex-wrap">
                             <button onClick={handleUserSubmit}
-                                className="px-4 py-2 rounded-full text-xs font-bold text-white bg-gradient-to-r from-f5-red to-f5-orange hover:scale-105 transition-transform">
+                                className="px-4 py-2 rounded-full text-xs font-bold text-white bg-gradient-to-r from-f5-red to-f5-orange hover:brightness-110 transition-all">
                                 Classify & Route ▶
                             </button>
                             {examples.map((ex, i) => (
@@ -2976,7 +2976,7 @@
                             <span className={`absolute bottom-2 right-3 text-[10px] font-mono ${userInput.length >= 40 ? 'text-f5-red font-bold' : (isDark ? 'text-gray-600' : 'text-gray-500')}`}>{userInput.length}/40</span>
                         </div>
                         <div className="flex items-center gap-2 mt-2 flex-wrap">
-                            <button onClick={handleSubmit} className="px-4 py-2 rounded-full text-xs font-bold text-white bg-gradient-to-r from-f5-red to-f5-orange hover:scale-105 transition-transform">Attack ▶</button>
+                            <button onClick={handleSubmit} className="px-4 py-2 rounded-full text-xs font-bold text-white bg-gradient-to-r from-f5-red to-f5-orange hover:brightness-110 transition-all">Attack ▶</button>
                             {examples.map((ex, i) => (
                                 <button key={i} onClick={() => { clearInterval(timerRef.current); if (!processing) { runAttack(classifyUserInput(ex.text)); } }}
                                     className={`text-xs px-2.5 py-1 rounded-lg border transition-colors cursor-pointer ${isDark ? 'border-white/10 text-gray-400 hover:border-f5-red/40 hover:text-f5-red' : 'border-gray-200 text-gray-500 hover:border-f5-red hover:text-f5-red'}`}>{ex.label}</button>
@@ -3124,7 +3124,7 @@
                         </div>
                         <div className="flex items-center gap-2 mt-2 flex-wrap">
                             <button onClick={handleUserSubmit} disabled={!userInput.trim()}
-                                className="px-4 py-2 rounded-full text-xs font-bold text-white bg-gradient-to-r from-f5-red to-f5-orange hover:scale-105 transition-transform">
+                                className="px-4 py-2 rounded-full text-xs font-bold text-white bg-gradient-to-r from-f5-red to-f5-orange hover:brightness-110 transition-all">
                                 Scan ▶
                             </button>
                             {examples.map((ex, i) => (
@@ -4444,7 +4444,7 @@
                             <span className={`absolute bottom-2 right-3 text-[10px] font-mono ${userInput.length >= 40 ? 'text-f5-red font-bold' : (isDark ? 'text-gray-600' : 'text-gray-500')}`}>{userInput.length}/40</span>
                         </div>
                         <div className="flex items-center gap-2 mt-2 flex-wrap">
-                            <button onClick={handleSubmit} className="px-4 py-2 rounded-full text-xs font-bold text-white bg-gradient-to-r from-f5-red to-f5-orange hover:scale-105 transition-transform">Scan ▶</button>
+                            <button onClick={handleSubmit} className="px-4 py-2 rounded-full text-xs font-bold text-white bg-gradient-to-r from-f5-red to-f5-orange hover:brightness-110 transition-all">Scan ▶</button>
                             {examples.map((ex, i) => (
                                 <button key={i} onClick={() => { clearInterval(timerRef.current); setPaused(true); if (!processing) runScenario(classifyUserInput(ex.text)); }}
                                     className={`text-xs px-2.5 py-1 rounded-lg border transition-colors cursor-pointer ${isDark ? 'border-white/10 text-gray-400 hover:border-f5-red/40 hover:text-f5-red' : 'border-gray-200 text-gray-500 hover:border-f5-red hover:text-f5-red'}`}>{ex.label}</button>
@@ -4592,7 +4592,7 @@
                         </div>
                         <div className="flex items-center gap-2 mt-2 flex-wrap">
                             <button onClick={handleUserSubmit} disabled={!userInput.trim()}
-                                className="px-4 py-2 rounded-full text-xs font-bold text-white bg-gradient-to-r from-f5-red to-f5-orange hover:scale-105 transition-transform">
+                                className="px-4 py-2 rounded-full text-xs font-bold text-white bg-gradient-to-r from-f5-red to-f5-orange hover:brightness-110 transition-all">
                                 Scan ▶
                             </button>
                             {examples.map((ex, i) => (
@@ -4712,7 +4712,7 @@
 
             return (
                 <div className="pt-16 px-4 pb-3 h-full min-h-0 flex flex-col">
-                    <div className="flex flex-col gap-1 justify-start overflow-hidden flex-shrink-0" style={{ height: '240px' }}>
+                    <div className="flex flex-col gap-1 justify-start overflow-hidden flex-shrink-0" style={{ height: '340px' }}>
                         {log.map((entry, i) => {
                             const isNewest = i === 0;
                             const Wrapper = isNewest ? motion.div : 'div';
@@ -4720,7 +4720,7 @@
                             return (
                                 <Wrapper key={entry.id} {...wrapperProps} className={`rounded-lg px-3 py-2 border-l-2 ${
                                     entry.decision === 'blocked' ? 'border-l-red-500' : entry.decision === 'warned' ? 'border-l-orange-400' : entry.decision === 'approved' ? 'border-l-cyan-400' : entry.decision === 'allowed' ? 'border-l-green-400' : (isDark ? 'border-l-white/10' : 'border-l-gray-200')
-                                } ${entry.decision === 'blocked' || entry.decision === 'warned' ? (isDark ? 'bg-red-500/[0.12]' : 'bg-red-500/10') : (isDark ? 'bg-emerald-500/10' : 'bg-emerald-500/[0.08]')}`} style={{ opacity: isNewest ? undefined : 1 - (i / log.length) * 0.55 }}>
+                                } ${entry.decision === 'blocked' || entry.decision === 'warned' ? (isDark ? 'bg-red-500/[0.12]' : 'bg-red-500/10') : (isDark ? 'bg-emerald-500/10' : 'bg-emerald-500/[0.08]')}`} style={{ opacity: i < 5 ? 1 : Math.max(0.4, 1 - (i - 4) * 0.3) }}>
                                     <div className="flex items-center gap-2">
                                         <span className={`flex-1 min-w-0 text-sm font-mono truncate ${
                                             entry.decision === 'blocked' ? (isDark ? 'text-red-400' : 'text-red-500') : entry.dest === '(encrypted)' ? (isDark ? 'text-gray-500' : 'text-gray-500') : (isDark ? 'text-gray-200' : 'text-gray-800')
@@ -4826,13 +4826,13 @@
 
             return (
                 <div className="pt-16 px-4 pb-3 h-full min-h-0 flex flex-col">
-                    <div className="flex flex-col gap-1 justify-start overflow-hidden flex-shrink-0" style={{ height: '240px' }}>
+                    <div className="flex flex-col gap-1 justify-start overflow-hidden flex-shrink-0" style={{ height: '340px' }}>
                         {log.map((entry, i) => {
                             const isNewest = i === 0;
                             const Wrapper = isNewest ? motion.div : 'div';
                             const wrapperProps = isNewest ? { initial: { opacity: 0, y: -6 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.4 } } : {};
                             return (
-                                <Wrapper key={entry.id} {...wrapperProps} className={`rounded-lg px-3 py-2 ${entry.action === 'block' || entry.action === 'redact' ? (isDark ? 'bg-red-500/[0.12]' : 'bg-red-500/10') : (isDark ? 'bg-emerald-500/10' : 'bg-emerald-500/[0.08]')}`} style={{ borderLeft: entry.action === 'block' ? '2px solid #ef4444' : entry.action === 'redact' ? '2px solid #fb923c' : entry.action === 'audit' || entry.action === 'log' ? '2px solid #06b6d4' : entry.detail && entry.detail.includes('⚠') ? '2px solid rgba(249,115,22,0.3)' : '2px solid transparent', opacity: isNewest ? undefined : 1 - (i / log.length) * 0.55 }}>
+                                <Wrapper key={entry.id} {...wrapperProps} className={`rounded-lg px-3 py-2 ${entry.action === 'block' || entry.action === 'redact' ? (isDark ? 'bg-red-500/[0.12]' : 'bg-red-500/10') : (isDark ? 'bg-emerald-500/10' : 'bg-emerald-500/[0.08]')}`} style={{ borderLeft: entry.action === 'block' ? '2px solid #ef4444' : entry.action === 'redact' ? '2px solid #fb923c' : entry.action === 'audit' || entry.action === 'log' ? '2px solid #06b6d4' : entry.detail && entry.detail.includes('⚠') ? '2px solid rgba(249,115,22,0.3)' : '2px solid transparent', opacity: i < 5 ? 1 : Math.max(0.4, 1 - (i - 4) * 0.3) }}>
                                     <div className="flex items-center gap-2">
                                         <span className="text-xs font-bold px-1.5 py-0.5 rounded shrink-0" style={{ backgroundColor: fwBg(entry.framework), color: fwColor(entry.framework), minWidth: '62px', textAlign: 'center' }}>{entry.framework}</span>
                                         <span className={`flex-1 min-w-0 text-sm truncate ${isDark ? 'text-gray-200' : 'text-gray-800'}`}>{entry.event}</span>
@@ -5016,6 +5016,7 @@
                     }, ...prev.slice(0, 5)]);
                     setClusterLoad(prev => ({ ...prev, [node]: load }));
                 };
+                processFile();
                 const interval = setInterval(processFile, 2200);
                 return () => clearInterval(interval);
             }, [bigipActive, bnkActive]);
@@ -5887,7 +5888,7 @@
                     <button
                         onClick={onProcess}
                         disabled={!text.trim() || processing}
-                        className="mt-3 px-6 py-2.5 rounded-full text-sm font-bold text-white bg-gradient-to-r from-f5-red to-f5-orange hover:scale-105 transition-transform disabled:opacity-50 disabled:hover:scale-100"
+                        className="mt-3 px-6 py-2.5 rounded-full text-sm font-bold text-white bg-gradient-to-r from-f5-red to-f5-orange hover:brightness-110 transition-all disabled:opacity-50 disabled:hover:scale-100"
                     >
                         {processing ? 'Processing...' : 'Process Through Pipeline'}
                     </button>
@@ -8417,7 +8418,7 @@
                     <div className="flex items-center gap-2 mb-2">
                         {!flowPlaying && !flowDone && (
                             <button onClick={handleFlowPlay}
-                                className="px-4 py-2 rounded-full text-xs font-bold text-white bg-gradient-to-r from-f5-red to-f5-orange hover:scale-105 transition-transform">
+                                className="px-4 py-2 rounded-full text-xs font-bold text-white bg-gradient-to-r from-f5-red to-f5-orange hover:brightness-110 transition-all">
                                 <i className="ph ph-play-fill mr-1"></i>Play
                             </button>
                         )}
@@ -8827,7 +8828,7 @@
                                 <div className="flex gap-2">
                                     {!playing && !done && (
                                         <button onClick={handlePlay}
-                                            className="px-4 py-1.5 rounded-lg text-xs font-bold text-white bg-gradient-to-r from-f5-red to-f5-orange hover:scale-105 transition-transform">
+                                            className="px-4 py-1.5 rounded-lg text-xs font-bold text-white bg-gradient-to-r from-f5-red to-f5-orange hover:brightness-110 transition-all">
                                             <i className="ph ph-play-fill mr-1"></i>Play
                                         </button>
                                     )}
@@ -9215,7 +9216,7 @@
                             <div className="flex items-center gap-2">
                                 {!playing && phase === 0 && (
                                     <button onClick={handlePlay}
-                                        className="px-3 py-1.5 rounded-full text-[10px] font-bold text-white bg-gradient-to-r from-f5-red to-f5-orange hover:scale-105 transition-transform">
+                                        className="px-3 py-1.5 rounded-full text-[10px] font-bold text-white bg-gradient-to-r from-f5-red to-f5-orange hover:brightness-110 transition-all">
                                         <i className="ph ph-play-fill mr-1"></i>Play
                                     </button>
                                 )}
@@ -9312,7 +9313,7 @@
                             <div className="flex items-center gap-2">
                                 {!playing && step === 0 && (
                                     <button onClick={handlePlay}
-                                        className="px-3 py-1.5 rounded-full text-[10px] font-bold text-white bg-gradient-to-r from-f5-red to-f5-orange hover:scale-105 transition-transform">
+                                        className="px-3 py-1.5 rounded-full text-[10px] font-bold text-white bg-gradient-to-r from-f5-red to-f5-orange hover:brightness-110 transition-all">
                                         <i className="ph ph-play-fill mr-1"></i>Play
                                     </button>
                                 )}
@@ -9388,7 +9389,7 @@
                             <div className="flex items-center gap-2">
                                 {!playing && phase === 0 && (
                                     <button onClick={handlePlay}
-                                        className="px-3 py-1.5 rounded-full text-[10px] font-bold text-white bg-gradient-to-r from-f5-red to-f5-orange hover:scale-105 transition-transform">
+                                        className="px-3 py-1.5 rounded-full text-[10px] font-bold text-white bg-gradient-to-r from-f5-red to-f5-orange hover:brightness-110 transition-all">
                                         <i className="ph ph-play-fill mr-1"></i>Play
                                     </button>
                                 )}
@@ -9596,7 +9597,7 @@
                         </div>
 
                         <div className="flex items-center gap-2">
-                            {!playing && step === 0 && <button onClick={() => { setPlaying(true); setStep(0); }} className="px-4 py-2 rounded-full text-xs font-bold text-white bg-gradient-to-r from-f5-red to-f5-orange hover:scale-105 transition-transform"><i className="ph ph-play-fill mr-1"></i>Play</button>}
+                            {!playing && step === 0 && <button onClick={() => { setPlaying(true); setStep(0); }} className="px-4 py-2 rounded-full text-xs font-bold text-white bg-gradient-to-r from-f5-red to-f5-orange hover:brightness-110 transition-all"><i className="ph ph-play-fill mr-1"></i>Play</button>}
                             {(playing || step > 0) && <button onClick={() => { setPlaying(false); setStep(0); }} className={`px-4 py-2 rounded-full text-xs font-medium ${isDark ? 'bg-white/5 text-gray-400 hover:bg-white/10' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}><i className="ph ph-arrow-counter-clockwise mr-1"></i>Reset</button>}
                         </div>
 
@@ -9812,7 +9813,7 @@
                         </div>
 
                         <div className="flex items-center gap-2">
-                            {!playing && step < 0 && <button onClick={() => { setPlaying(true); setStep(0); }} className="px-4 py-2 rounded-full text-xs font-bold text-white bg-gradient-to-r from-f5-red to-f5-orange hover:scale-105 transition-transform"><i className="ph ph-play-fill mr-1"></i>Play</button>}
+                            {!playing && step < 0 && <button onClick={() => { setPlaying(true); setStep(0); }} className="px-4 py-2 rounded-full text-xs font-bold text-white bg-gradient-to-r from-f5-red to-f5-orange hover:brightness-110 transition-all"><i className="ph ph-play-fill mr-1"></i>Play</button>}
                             {(playing || step >= 0) && <button onClick={() => { setPlaying(false); setStep(-1); }} className={`px-4 py-2 rounded-full text-xs font-medium ${isDark ? 'bg-white/5 text-gray-400 hover:bg-white/10' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}><i className="ph ph-arrow-counter-clockwise mr-1"></i>Reset</button>}
                             {step >= 0 && <span className={`text-[10px] font-mono ml-auto ${isDark ? 'text-gray-600' : 'text-gray-500'}`}>Step {step + 1} / {stages.length}</span>}
                         </div>
@@ -9990,7 +9991,7 @@
                             <div className="flex items-center justify-between mb-3">
                                 <div className={`text-[9px] uppercase font-bold tracking-wider ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>Live Comparison: Same Task, Different Capabilities</div>
                                 <div className="flex gap-2">
-                                    {!playing && demoStep < 0 && <button onClick={handlePlay} className="px-3 py-1.5 rounded-full text-[10px] font-bold text-white bg-gradient-to-r from-f5-red to-f5-orange hover:scale-105 transition-transform"><i className="ph ph-play-fill mr-1"></i>Play</button>}
+                                    {!playing && demoStep < 0 && <button onClick={handlePlay} className="px-3 py-1.5 rounded-full text-[10px] font-bold text-white bg-gradient-to-r from-f5-red to-f5-orange hover:brightness-110 transition-all"><i className="ph ph-play-fill mr-1"></i>Play</button>}
                                     {(playing || demoStep >= 0) && <button onClick={handleReset} className={`text-[10px] font-medium px-3 py-1.5 rounded-lg ${isDark ? 'bg-white/5 text-gray-400 hover:bg-white/10' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}><i className="ph ph-arrow-counter-clockwise mr-1"></i>Reset</button>}
                                 </div>
                             </div>
@@ -10110,7 +10111,7 @@
                         </div>
 
                         <div className="flex items-center gap-2">
-                            {!playing && step < 0 && <button onClick={handlePlay} className="px-4 py-2 rounded-full text-xs font-bold text-white bg-gradient-to-r from-f5-red to-f5-orange hover:scale-105 transition-transform"><i className="ph ph-play-fill mr-1"></i>Play</button>}
+                            {!playing && step < 0 && <button onClick={handlePlay} className="px-4 py-2 rounded-full text-xs font-bold text-white bg-gradient-to-r from-f5-red to-f5-orange hover:brightness-110 transition-all"><i className="ph ph-play-fill mr-1"></i>Play</button>}
                             {(playing || step >= 0) && <button onClick={handleReset} className={`px-4 py-2 rounded-full text-xs font-medium ${isDark ? 'bg-white/5 text-gray-400 hover:bg-white/10' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}><i className="ph ph-arrow-counter-clockwise mr-1"></i>Reset</button>}
                             {step >= 0 && <span className={`text-[10px] font-mono ml-auto ${isDark ? 'text-gray-600' : 'text-gray-500'}`}>Iteration {iteration} / 3</span>}
                         </div>
@@ -10271,7 +10272,7 @@
                         </div>
 
                         <div className="flex items-center gap-2">
-                            {!playing && step < 0 && <button onClick={() => { setPlaying(true); setStep(0); }} className="px-4 py-2 rounded-full text-xs font-bold text-white bg-gradient-to-r from-f5-red to-f5-orange hover:scale-105 transition-transform"><i className="ph ph-play-fill mr-1"></i>Play</button>}
+                            {!playing && step < 0 && <button onClick={() => { setPlaying(true); setStep(0); }} className="px-4 py-2 rounded-full text-xs font-bold text-white bg-gradient-to-r from-f5-red to-f5-orange hover:brightness-110 transition-all"><i className="ph ph-play-fill mr-1"></i>Play</button>}
                             {(playing || step >= 0) && <button onClick={() => { setPlaying(false); setStep(-1); }} className={`px-4 py-2 rounded-full text-xs font-medium ${isDark ? 'bg-white/5 text-gray-400 hover:bg-white/10' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}><i className="ph ph-arrow-counter-clockwise mr-1"></i>Reset</button>}
                         </div>
 
@@ -10419,7 +10420,7 @@
                         </div>
 
                         <div className="flex items-center gap-2">
-                            {!playing && phase < 0 && <button onClick={() => { setPlaying(true); setPhase(0); }} className="px-4 py-2 rounded-full text-xs font-bold text-white bg-gradient-to-r from-f5-red to-f5-orange hover:scale-105 transition-transform"><i className="ph ph-play-fill mr-1"></i>Play</button>}
+                            {!playing && phase < 0 && <button onClick={() => { setPlaying(true); setPhase(0); }} className="px-4 py-2 rounded-full text-xs font-bold text-white bg-gradient-to-r from-f5-red to-f5-orange hover:brightness-110 transition-all"><i className="ph ph-play-fill mr-1"></i>Play</button>}
                             {(playing || phase >= 0) && <button onClick={() => { setPlaying(false); setPhase(-1); }} className={`px-4 py-2 rounded-full text-xs font-medium ${isDark ? 'bg-white/5 text-gray-400 hover:bg-white/10' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}><i className="ph ph-arrow-counter-clockwise mr-1"></i>Reset</button>}
                             {phase >= 0 && <span className={`text-[10px] font-mono ml-auto ${isDark ? 'text-gray-600' : 'text-gray-500'}`}>Step {phase + 1}/{stages.length}</span>}
                         </div>
@@ -10652,7 +10653,7 @@
                         </div>
 
                         <div className="flex items-center gap-2">
-                            {!playing && step < 0 && <button onClick={() => { setPlaying(true); setStep(0); }} className="px-4 py-2 rounded-full text-xs font-bold text-white bg-gradient-to-r from-f5-red to-f5-orange hover:scale-105 transition-transform"><i className="ph ph-play-fill mr-1"></i>Play</button>}
+                            {!playing && step < 0 && <button onClick={() => { setPlaying(true); setStep(0); }} className="px-4 py-2 rounded-full text-xs font-bold text-white bg-gradient-to-r from-f5-red to-f5-orange hover:brightness-110 transition-all"><i className="ph ph-play-fill mr-1"></i>Play</button>}
                             {(playing || step >= 0) && <button onClick={() => { setPlaying(false); setStep(-1); }} className={`px-4 py-2 rounded-full text-xs font-medium ${isDark ? 'bg-white/5 text-gray-400 hover:bg-white/10' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}><i className="ph ph-arrow-counter-clockwise mr-1"></i>Reset</button>}
                         </div>
 
@@ -10932,7 +10933,7 @@
                                     style={selectedTool === i ? { backgroundColor: dm.color } : {}}>{dm.server}</button>
                             ))}
                             <div className="ml-auto flex gap-2">
-                                {!playing && phase < 0 && <button onClick={() => { setPlaying(true); setPhase(0); }} className="px-4 py-1.5 rounded-full text-xs font-bold text-white bg-gradient-to-r from-f5-red to-f5-orange hover:scale-105 transition-transform"><i className="ph ph-play-fill mr-1"></i>Play</button>}
+                                {!playing && phase < 0 && <button onClick={() => { setPlaying(true); setPhase(0); }} className="px-4 py-1.5 rounded-full text-xs font-bold text-white bg-gradient-to-r from-f5-red to-f5-orange hover:brightness-110 transition-all"><i className="ph ph-play-fill mr-1"></i>Play</button>}
                                 {(playing || phase >= 0) && <button onClick={() => { setPlaying(false); setPhase(-1); }} className={`px-3 py-1.5 rounded-lg text-xs font-medium ${isDark ? 'bg-white/5 text-gray-400' : 'bg-gray-100 text-gray-500'}`}><i className="ph ph-arrow-counter-clockwise mr-1"></i>Reset</button>}
                             </div>
                         </div>
@@ -11565,18 +11566,22 @@
                     return raised.map(t => ({ ...t, prob: (t.raw / sum) * 100 }));
                 }, [temp]);
 
-                const getResponse = () => {
-                    if (temp === 0) return { text: "The capital of France is Paris.", style: isDark ? 'text-gray-300' : 'text-gray-600', glow: '' };
-                    if (temp < 0.2) return { text: "The capital of France is Paris. It is a major European city.", style: isDark ? 'text-gray-300' : 'text-gray-600', glow: '' };
-                    if (temp < 0.4) return { text: "The capital of France is Paris. It has been the nation's capital since the 10th century.", style: isDark ? 'text-gray-300' : 'text-gray-600', glow: '' };
-                    if (temp < 0.6) return { text: "The capital of France is Paris, a global center of art, gastronomy, and culture along the Seine river.", style: isDark ? 'text-blue-300' : 'text-blue-600', glow: '' };
-                    if (temp < 0.8) return { text: "The capital of France is Paris, famous globally for its art, fashion, and the iconic Eiffel Tower.", style: isDark ? 'text-blue-300' : 'text-blue-600', glow: '' };
-                    if (temp < 1.0) return { text: "Paris! The City of Light, where cobblestone streets hum with espresso and impressionist dreams.", style: isDark ? 'text-blue-300' : 'text-blue-600', glow: '' };
-                    if (temp < 1.2) return { text: "Ah, Paris! Where the Seine whispers secrets to the gargoyles of Notre-Dame under amber streetlights.", style: isDark ? 'text-violet-300' : 'text-violet-600', glow: isDark ? 'drop-shadow(0 0 8px rgba(139,92,246,0.4))' : '' };
-                    if (temp < 1.5) return { text: "The capital of France? Paris! A bustling metropolis of luminescent whispers and buttery croissants dancing in moonlight.", style: isDark ? 'text-violet-300' : 'text-violet-600', glow: isDark ? 'drop-shadow(0 0 10px rgba(139,92,246,0.6))' : '' };
-                    if (temp < 1.8) return { text: "France's capital bursts — Paris! Where quantum baguettes debate philosophy with neon gargoyles beneath a fractal Seine...", style: isDark ? 'text-fuchsia-300' : 'text-fuchsia-600', glow: isDark ? 'drop-shadow(0 0 12px rgba(217,70,239,0.6))' : '' };
-                    return { text: "PARIS!! Electrons of croissant-flavored consciousness spiral through holographic boulevards as the Eiffel Tower dissolves into pure mathematics...", style: isDark ? 'text-fuchsia-300' : 'text-fuchsia-600', glow: isDark ? 'drop-shadow(0 0 15px rgba(217,70,239,0.8))' : '' };
-                };
+                const responses = [
+                    { max: 0.05, text: "Paris.", style: isDark ? 'text-gray-300' : 'text-gray-600', glow: '' },
+                    { max: 0.15, text: "The capital of France is Paris.", style: isDark ? 'text-gray-300' : 'text-gray-600', glow: '' },
+                    { max: 0.25, text: "The capital of France is Paris. It is a major European city.", style: isDark ? 'text-gray-300' : 'text-gray-600', glow: '' },
+                    { max: 0.35, text: "The capital of France is Paris. It has served as the nation's political and cultural center for centuries.", style: isDark ? 'text-gray-300' : 'text-gray-600', glow: '' },
+                    { max: 0.50, text: "The capital of France is Paris, a historic city known for its architecture, museums, and role as a global diplomatic hub.", style: isDark ? 'text-blue-300' : 'text-blue-600', glow: '' },
+                    { max: 0.65, text: "The capital of France is Paris, a vibrant metropolis celebrated for world-class art, gastronomy, and the iconic Seine river.", style: isDark ? 'text-blue-300' : 'text-blue-600', glow: '' },
+                    { max: 0.80, text: "Paris, the City of Light! Famous globally for the Eiffel Tower, the Louvre, and a café culture that has inspired generations of artists.", style: isDark ? 'text-blue-300' : 'text-blue-600', glow: '' },
+                    { max: 1.00, text: "Paris! Where cobblestone streets hum with espresso aromas, impressionist dreams linger in golden afternoon light, and every corner tells a story.", style: isDark ? 'text-blue-300' : 'text-blue-600', glow: '' },
+                    { max: 1.20, text: "Ah, Paris! Where the Seine whispers secrets to the gargoyles of Notre-Dame and amber streetlights waltz with the ghosts of Hemingway and Stein.", style: isDark ? 'text-violet-300' : 'text-violet-600', glow: isDark ? 'drop-shadow(0 0 8px rgba(139,92,246,0.4))' : '' },
+                    { max: 1.40, text: "The capital of France? Paris! A luminescent metropolis where buttery croissants dance in moonlight and philosophy blooms from every zinc-topped counter.", style: isDark ? 'text-violet-300' : 'text-violet-600', glow: isDark ? 'drop-shadow(0 0 10px rgba(139,92,246,0.6))' : '' },
+                    { max: 1.60, text: "France's beating heart — PARIS! Neon gargoyles debate existentialism with quantum baguettes while the Seine fractals into a thousand mirrored dimensions...", style: isDark ? 'text-fuchsia-300' : 'text-fuchsia-600', glow: isDark ? 'drop-shadow(0 0 12px rgba(217,70,239,0.6))' : '' },
+                    { max: 1.80, text: "P-A-R-I-S!! The Eiffel Tower liquefies into pure mathematics as holographic boulevards echo with the laughter of sentient croissants riding bicycles of light...", style: isDark ? 'text-fuchsia-300' : 'text-fuchsia-600', glow: isDark ? 'drop-shadow(0 0 14px rgba(217,70,239,0.7))' : '' },
+                    { max: 999, text: "!!PARIS!! Electrons of butter-consciousness spiral through 11-dimensional boulangeries — the Arc de Triomphe unfolds into a Klein bottle of pure FROMAGE ENERGY 🧀🌌✨", style: isDark ? 'text-fuchsia-300' : 'text-fuchsia-600', glow: isDark ? 'drop-shadow(0 0 15px rgba(217,70,239,0.8))' : '' },
+                ];
+                const getResponse = () => responses.find(r => temp < r.max) || responses[responses.length - 1];
                 const response = getResponse();
 
                 return (
@@ -11625,8 +11630,9 @@
                                 <div className={`text-xs font-bold uppercase tracking-wider mb-3 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>Live Generation</div>
                                 <div className={`flex-1 rounded-xl p-4 text-sm leading-relaxed flex items-center ${isDark ? 'bg-black/30 border border-gray-800' : 'bg-gray-50 border border-gray-200'}`}>
                                     <AnimatePresence mode="wait">
-                                        <motion.div key={response.text} initial={{ opacity: 0, scale: 0.95, filter: "blur(8px)" }} animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }} exit={{ opacity: 0, scale: 1.05, filter: "blur(8px)" }} transition={{ duration: 0.4 }}
-                                            className={`font-serif italic w-full text-center ${response.style}`} style={response.glow ? { filter: response.glow } : {}}>{response.text}</motion.div>
+                                        <motion.div key={response.text} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.3 }}>
+                                            <div className={`font-serif italic w-full text-center ${response.style}`} style={response.glow ? { filter: response.glow } : {}}>{response.text}</div>
+                                        </motion.div>
                                     </AnimatePresence>
                                 </div>
                             </div>
